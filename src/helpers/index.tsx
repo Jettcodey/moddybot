@@ -1,8 +1,7 @@
-import {EmbedBuilder, type ColorResolvable, REST} from "discord.js";
-import { Routes } from 'discord.js';
-import { Commands } from '../commands';
-import path from "node:path";
-import fs from "node:fs";
+import { EmbedBuilder, REST, Routes } from "discord.js";
+import { Commands } from "@/commands/index.ts";
+import type { EmbedProps, FieldProps, FooterProps, AuthorProps } from "@/types/index.ts";
+import {LogAPI} from "@/utils/logger.ts";
 
 export function h(type: any, props: any, ...children: any[]) {
     if (typeof type === 'function') {
@@ -13,47 +12,19 @@ export function h(type: any, props: any, ...children: any[]) {
 
 export const Fragment = Symbol('Fragment');
 
-interface EmbedProps {
-    title?: string;
-    description?: string;
-    color?: ColorResolvable;
-    url?: string;
-    timestamp?: Date | boolean;
-    thumbnail?: string;
-    image?: string;
-    children?: React.ReactNode;
-}
-
-interface FieldProps {
-    name: string;
-    value: string;
-    inline?: boolean;
-}
-
-interface FooterProps {
-    text: string;
-    iconURL?: string;
-}
-
-interface AuthorProps {
-    name: string;
-    iconURL?: string;
-    url?: string;
-}
-
-export function Embed(props: EmbedProps) {
+export function Embed(props: EmbedProps): EmbedProps {
     return props;
 }
 
-export function Field(props: FieldProps) {
+export function Field(props: FieldProps): FieldProps {
     return props;
 }
 
-export function Footer(props: FooterProps) {
+export function Footer(props: FooterProps): FooterProps {
     return props;
 }
 
-export function Author(props: AuthorProps) {
+export function Author(props: AuthorProps): AuthorProps {
     return props;
 }
 
@@ -107,36 +78,21 @@ export function buildEmbed(element: any): EmbedBuilder {
     return embed;
 }
 
-export async function deployCommands(manager) {
+export async function deployCommands(manager: Commands): Promise<void> {
     await manager.loadCommands();
 
     const commandsData = manager.getAllCommands().map(cmd => cmd.data.toJSON());
 
-    const rest = new REST().setToken(process.env.TOKEN!);
+    const rest = new REST().setToken(process.env.TOKEN);
 
     try {
         await rest.put(
-            Routes.applicationGuildCommands(process.env.CLIENT_ID!, process.env.GUILD_ID!),
+            Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
             { body: commandsData },
         );
 
-        console.log('Refreshed all commands.');
+        LogAPI.log('Refreshed all commands.');
     } catch (error) {
-        console.error(error);
+        LogAPI.err(error);
     }
-}
-
-const configPath = path.join(__dirname, "../config.json");
-
-export function getConfig()
-{
-    const data = fs.readFileSync(configPath, "utf8");
-    return JSON.parse(data);
-}
-
-export function setConfig(key: string, value: string)
-{
-    const config = getConfig();
-    config[key] = value;
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 }

@@ -4,15 +4,18 @@
 import {
     Client,
     GatewayIntentBits,
-    type GuildMember, type Interaction,
-    type Message, SectionBuilder,
+    ChannelType,
+    type GuildMember,
+    type Interaction,
     type Snowflake,
-    type TextChannel, type ThreadChannel
-} from "discord.js"
-import { ChannelType, type ForumChannel } from "discord.js";
-import {Commands} from "./commands";
-import {Author, buildEmbed, Embed, Field, Footer, h, Fragment, deployCommands} from "./helpers";
-import Events from "./events";
+    type TextChannel,
+    type ThreadChannel,
+    type ForumChannel,
+} from "discord.js";
+import { Commands } from "@/commands/index.ts";
+import { Author, buildEmbed, Embed, Field, Footer, h, Fragment, deployCommands } from "@/helpers/index.tsx";
+import Events from "@/events/index.ts";
+import {LogAPI} from "@/utils/logger.ts";
 
 const client = new Client({
     intents: [
@@ -27,7 +30,7 @@ const commands = new Commands();
 const eventsManager = new Events();
 
 client.on('clientReady', async () => {
-    console.log('Ready!');
+    LogAPI.log('Ready!');
     await deployCommands(commands);
     await eventsManager.loadEvents();
 
@@ -64,11 +67,19 @@ client.on("threadCreate", async (thread: ThreadChannel, newlyCreated: boolean) =
 });
 
 client.on("interactionCreate", async (interaction: Interaction) => {
-    if (!interaction.isCommand()) return;
+    if (interaction.isAutocomplete()) {
+        const command = commands.getCommand(interaction.commandName);
+        if (command?.autocomplete) {
+            await command.autocomplete(client, interaction);
+        }
+        return;
+    }
 
-    const interactionExport = commands.getCommand(interaction.commandName);
-    if (interactionExport) {
-        await interactionExport.execute(client, interaction);
+    if (!interaction.isChatInputCommand()) return;
+
+    const command = commands.getCommand(interaction.commandName);
+    if (command) {
+        await command.execute(client, interaction);
     }
 })
 

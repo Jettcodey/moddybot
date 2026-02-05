@@ -1,10 +1,11 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
+import type { Command } from "@/types/index.ts";
 
-const commandsPath = path.join(process.cwd(), 'src/commands');
+const commandsPath = path.join(import.meta.dirname, ".");
 
 export class Commands {
-    private commands: Map<String, any> = new Map();
+    private commands: Map<string, Command> = new Map();
 
     async loadCommands()
     {
@@ -21,13 +22,11 @@ export class Commands {
         }
     }
 
-    getCommand(name: string)
-    {
+    getCommand(name: string): Command | undefined {
         return this.commands.get(name);
     }
 
-    getAllCommands()
-    {
+    getAllCommands(): Command[] {
         return Array.from(this.commands.values());
     }
 }

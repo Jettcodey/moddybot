@@ -1,4 +1,4 @@
-import {SlashCommandBuilder, type Client, type ChatInputCommandInteraction, Snowflake} from "discord.js";
+import {SlashCommandBuilder, type Client, type ChatInputCommandInteraction, type Snowflake} from "discord.js";
 
 export default {
     data: new SlashCommandBuilder()

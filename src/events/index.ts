@@ -1,7 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
+import type { Event } from "@/types/index.ts";
 
-const eventsPath = path.join(__dirname, "..", "events");
+const eventsPath = path.join(import.meta.dirname, ".");
 
 export default class Events {
     private events: Map<string, Event> = new Map();
@@ -22,6 +23,6 @@ export default class Events {
 
     getEvents()
     {
-        return Array.from(this.events.values());
+        return Array.from(this.events.values()) as Event[];
     }
 }
