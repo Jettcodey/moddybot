@@ -126,9 +126,9 @@ client.on('guildMemberAdd', async (member: GuildMember) => {
 
 
 // const rest = new REST().setToken(process.env.TOKEN);
-// rest.post(Routes.channelMessages('1344557689979670582'), {
+// rest.post(Routes.channelMessages('1347239563294146652'), {
 //     body: {
-//         content: 'HEY NO',
+//         content: '<:kibby:1440145089715376280>',
 //         flags: 0,
 //         tts: false
 //     }

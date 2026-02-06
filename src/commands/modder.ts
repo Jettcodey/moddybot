@@ -41,7 +41,7 @@ export default {
 
         await member.roles.add(modderRole);
         await interaction.reply({
-            content: `${member.user.tag} is now a ${modderRole.name}`, ephemeral: true
+            content: `${member.user.tag} is now a ${modderRole.name}`
         });
     }
 }

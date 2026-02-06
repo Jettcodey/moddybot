@@ -7,7 +7,7 @@ import {check} from "@/commands/defaults";
 
 export default {
     data: new SlashCommandBuilder()
-        .setName('message')
+        .setName('say')
         .setDescription('say')
         .addStringOption(option => option
             .setName('say')
