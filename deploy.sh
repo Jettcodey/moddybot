@@ -2,6 +2,8 @@
 
 set -e
 
+cd "$(dirname "$0")"
+
 echo "Starting deployment..."
 
 echo "Pulling latest changes from GitHub..."
