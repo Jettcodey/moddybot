@@ -3,17 +3,24 @@ import type {
   ChatInputCommandInteraction,
   AutocompleteInteraction,
   SlashCommandBuilder,
-  SlashCommandOptionsOnlyBuilder, Interaction, Message, Embed,
+  SlashCommandOptionsOnlyBuilder, Interaction, Message, Embed, ContextMenuCommandBuilder,
+  UserContextMenuCommandInteraction, MessageContextMenuCommandInteraction,
 } from "discord.js";
 
 export interface Command {
-  data: SlashCommandBuilder | SlashCommandOptionsOnlyBuilder;
-  execute(client: Client, interaction: ChatInputCommandInteraction): Promise<void>;
+  data: SlashCommandBuilder | SlashCommandOptionsOnlyBuilder | ContextMenuCommandBuilder;
+  execute(
+      client: Client,
+      interaction: ChatInputCommandInteraction | UserContextMenuCommandInteraction | MessageContextMenuCommandInteraction
+  ): Promise<void>;
   autocomplete?(client: Client, interaction: AutocompleteInteraction): Promise<void>;
-  permissionCheck?(client: Client, interaction: ChatInputCommandInteraction): Promise<{
+  permissionCheck?(
+      client: Client,
+      interaction: ChatInputCommandInteraction | UserContextMenuCommandInteraction | MessageContextMenuCommandInteraction
+  ): Promise<{
     result: boolean;
     message?: string;
-    embeds?: Embed[];
+    embeds?: any[];
     hide?: boolean;
   }>;
 }
