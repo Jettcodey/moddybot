@@ -10,7 +10,7 @@ git pull origin main
 echo "📦 Installing dependencies..."
 bun install
 
-echo "🔄 Restarting bot with PM2..."
-pm2 restart moddybot
+echo "🔄 Restarting bot with systemd..."
+sudo systemctl restart moddybot
 
 echo "✅ Deployment complete!"

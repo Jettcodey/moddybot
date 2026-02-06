@@ -39,11 +39,11 @@ async function executeDeploy() {
     const exitCode = await proc.exited;
 
     if (exitCode === 0) {
-        LogAPI.success("Deployment completed successfully");
+        LogAPI.log("✅ Deployment completed successfully");
         LogAPI.log(stdout);
     } else {
-        LogAPI.error("Deployment failed");
-        LogAPI.error(stderr);
+        LogAPI.err("❌ Deployment failed");
+        LogAPI.err(stderr);
     }
 
     return exitCode === 0;
@@ -67,7 +67,7 @@ const server = Bun.serve({
             const payload = await req.text();
 
             if (!verifyGitHubSignature(payload, signature)) {
-                LogAPI.error("Invalid webhook signature");
+                LogAPI.err("Invalid webhook signature");
                 return new Response(JSON.stringify({ error: "Invalid signature" }), {
                     status: 401,
                     headers: { "Content-Type": "application/json" },
@@ -102,7 +102,7 @@ const server = Bun.serve({
     },
 });
 
-LogAPI.success(`Webhook server running on port ${WEBHOOK_PORT}`);
+LogAPI.log(`✅ Webhook server running on port ${WEBHOOK_PORT}`);
 LogAPI.log("Endpoints:");
 LogAPI.log(`  - POST /webhook (GitHub webhooks)`);
 LogAPI.log(`  - GET  /health (Health check)`);
