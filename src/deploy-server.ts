@@ -28,25 +28,53 @@ function verifyGitHubSignature(payload: string, signature: string): boolean {
 async function executeDeploy() {
     LogAPI.log("Starting deployment...");
 
-    const proc = Bun.spawn(["bash", "/home/cole/moddybot/deploy.sh"], {
-        cwd: "/home/cole/moddybot",
-        stdout: "pipe",
-        stderr: "pipe",
-    });
+    const repoDir = "/home/cole/moddybot";
 
-    const stdout = await new Response(proc.stdout).text();
-    const stderr = await new Response(proc.stderr).text();
-    const exitCode = await proc.exited;
+    try {
+        LogAPI.log("Pulling latest changes...");
+        const gitPull = Bun.spawn(["git", "pull", "origin", "main"], {
+            cwd: repoDir,
+            stdout: "pipe",
+            stderr: "pipe",
+        });
 
-    if (exitCode === 0) {
-        LogAPI.log("✅ Deployment completed successfully");
-        LogAPI.log(stdout);
-    } else {
-        LogAPI.err("❌ Deployment failed");
-        LogAPI.err(stderr);
+        await gitPull.exited;
+        const pullOutput = await new Response(gitPull.stdout).text();
+        LogAPI.log(pullOutput);
+
+        LogAPI.log("Installing dependencies...");
+        const bunInstall = Bun.spawn(["bun", "install"], {
+            cwd: repoDir,
+            stdout: "pipe",
+            stderr: "pipe",
+        });
+
+        await bunInstall.exited;
+
+        LogAPI.log("Restarting bot...");
+        const restart = Bun.spawn(["sudo", "systemctl", "restart", "moddybot"], {
+            cwd: repoDir,
+            stdout: "pipe",
+            stderr: "pipe",
+        });
+
+        const exitCode = await restart.exited;
+        const stdout = await new Response(restart.stdout).text();
+        const stderr = await new Response(restart.stderr).text();
+
+        if (exitCode === 0) {
+            LogAPI.log("✅ Deployment completed successfully");
+            return true;
+        } else {
+            LogAPI.err("❌ Deployment failed");
+            LogAPI.err(stderr);
+            return false;
+        }
+    } catch (error) {
+        LogAPI.err("❌ Deployment error");
+        LogAPI.err(String(error));
+        return false;
     }
-
-    return exitCode === 0;
 }
 
 const server = Bun.serve({
