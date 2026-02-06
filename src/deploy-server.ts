@@ -28,8 +28,8 @@ function verifyGitHubSignature(payload: string, signature: string): boolean {
 async function executeDeploy() {
     LogAPI.log("Starting deployment...");
 
-    const proc = Bun.spawn(["bash", "deploy.sh"], {
-        cwd: process.cwd(),
+    const proc = Bun.spawn(["bash", "/home/cole/moddybot/deploy.sh"], {
+        cwd: "/home/cole/moddybot",
         stdout: "pipe",
         stderr: "pipe",
     });
