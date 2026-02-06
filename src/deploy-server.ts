@@ -36,7 +36,7 @@ function verifyGitHubSignature(payload: string, signature: string): boolean {
 
 async function sendDiscordMessage(content: string, embed?: any) {
     if (!MODDYBOTPUSH_ID || !DISCORD_TOKEN) {
-        LogAPI.log("Discord notifications not configured");
+        LogAPI.log("discord notifications not configured");
         return;
     }
 
@@ -45,29 +45,29 @@ async function sendDiscordMessage(content: string, embed?: any) {
             body: embed ? { content, embeds: [embed] } : { content }
         });
     } catch (error) {
-        LogAPI.err(`Failed to send Discord notification: ${error}`);
+        LogAPI.err(`failed to send discord notification: ${error}`);
     }
 }
 
 async function executeDeploy(commitMessage?: string, pusher?: string) {
-    LogAPI.log("Starting deployment...");
+    LogAPI.log("starting deployment");
 
     const repoDir = "/home/cole/moddybot";
 
     try {
         const embed = {
-            title: "🔄 ModdyBot is Restarting!",
-            description: commitMessage || "Deploying latest changes...",
+            title: "moddybot restarting",
+            description: commitMessage || "deploying latest changes",
             color: 0xffa500,
             fields: [
                 {
-                    name: "Pushed by",
-                    value: pusher || "Unknown",
+                    name: "pushed by",
+                    value: pusher || "unknown",
                     inline: true
                 },
                 {
-                    name: "Status",
-                    value: "⏳ Pulling changes...",
+                    name: "status",
+                    value: "pulling changes",
                     inline: true
                 }
             ],
@@ -76,7 +76,7 @@ async function executeDeploy(commitMessage?: string, pusher?: string) {
 
         await sendDiscordMessage("", embed);
 
-        LogAPI.log("Pulling latest changes...");
+        LogAPI.log("pulling latest changes");
         const gitPull = Bun.spawn(["git", "pull", "origin", "main"], {
             cwd: repoDir,
             stdout: "pipe",
@@ -87,7 +87,7 @@ async function executeDeploy(commitMessage?: string, pusher?: string) {
         const pullOutput = await new Response(gitPull.stdout).text();
         LogAPI.log(pullOutput);
 
-        LogAPI.log("Installing dependencies...");
+        LogAPI.log("installing dependencies");
         const bunInstall = Bun.spawn(["bun", "install"], {
             cwd: repoDir,
             stdout: "pipe",
@@ -96,9 +96,9 @@ async function executeDeploy(commitMessage?: string, pusher?: string) {
 
         await bunInstall.exited;
 
-        await sendDiscordMessage("🛑 ModdyBot is stopping...");
+        await sendDiscordMessage("moddybot stopping");
 
-        LogAPI.log("Restarting bot...");
+        LogAPI.log("restarting bot");
         const restart = Bun.spawn(["sudo", "systemctl", "restart", "moddybot"], {
             cwd: repoDir,
             stdout: "pipe",
@@ -110,16 +110,16 @@ async function executeDeploy(commitMessage?: string, pusher?: string) {
         const stderr = await new Response(restart.stderr).text();
 
         if (exitCode === 0) {
-            LogAPI.log("✅ Deployment completed successfully");
+            LogAPI.log("deployment completed successfully");
 
             const successEmbed = {
-                title: "✅ ModdyBot is Back Online!",
-                description: "Deployment completed successfully",
+                title: "moddybot back online",
+                description: "deployment completed successfully",
                 color: 0x00ff00,
                 fields: [
                     {
-                        name: "Changes",
-                        value: commitMessage || "Latest updates deployed",
+                        name: "changes",
+                        value: commitMessage || "latest updates deployed",
                         inline: false
                     }
                 ],
@@ -129,17 +129,17 @@ async function executeDeploy(commitMessage?: string, pusher?: string) {
             await sendDiscordMessage("", successEmbed);
             return true;
         } else {
-            LogAPI.err("❌ Deployment failed");
+            LogAPI.err("deployment failed");
             LogAPI.err(stderr);
 
-            await sendDiscordMessage("❌ Deployment failed! Check logs for details.");
+            await sendDiscordMessage("deployment failed, check logs");
             return false;
         }
     } catch (error) {
-        LogAPI.err("❌ Deployment error");
+        LogAPI.err("deployment error");
         LogAPI.err(String(error));
 
-        await sendDiscordMessage("❌ Deployment error! Check logs for details.");
+        await sendDiscordMessage("deployment error, check logs");
         return false;
     }
 }
@@ -162,33 +162,33 @@ const server = Bun.serve({
             const payload = await req.text();
 
             if (!verifyGitHubSignature(payload, signature)) {
-                LogAPI.err("Invalid webhook signature");
-                return new Response(JSON.stringify({ error: "Invalid signature" }), {
+                LogAPI.err("invalid webhook signature");
+                return new Response(JSON.stringify({ error: "invalid signature" }), {
                     status: 401,
                     headers: { "Content-Type": "application/json" },
                 });
             }
 
             if (event !== "push") {
-                return new Response(JSON.stringify({ message: "Event ignored" }), {
+                return new Response(JSON.stringify({ message: "event ignored" }), {
                     headers: { "Content-Type": "application/json" },
                 });
             }
 
             const data: GitHubWebhookPayload = JSON.parse(payload);
 
-            LogAPI.log(`Received push event from ${data.pusher?.name}`);
-            LogAPI.log(`Repository: ${data.repository?.full_name}`);
-            LogAPI.log(`Ref: ${data.ref}`);
+            LogAPI.log(`received push event from ${data.pusher?.name}`);
+            LogAPI.log(`repository: ${data.repository?.full_name}`);
+            LogAPI.log(`ref: ${data.ref}`);
 
-            const commitMessage = data.commits?.[0]?.message || "No commit message";
-            const pusher = data.pusher?.name || "Unknown";
+            const commitMessage = data.commits?.[0]?.message || "no commit message";
+            const pusher = data.pusher?.name || "unknown";
 
             const success = await executeDeploy(commitMessage, pusher);
 
             return new Response(
                 JSON.stringify({
-                    message: success ? "Deployment triggered" : "Deployment failed",
+                    message: success ? "deployment triggered" : "deployment failed",
                 }),
                 {
                     headers: { "Content-Type": "application/json" },
@@ -196,11 +196,11 @@ const server = Bun.serve({
             );
         }
 
-        return new Response("Not found", { status: 404 });
+        return new Response("not found", { status: 404 });
     },
 });
 
-LogAPI.log(`✅ Webhook server running on port ${WEBHOOK_PORT}`);
-LogAPI.log("Endpoints:");
-LogAPI.log(`  - POST /webhook (GitHub webhooks)`);
-LogAPI.log(`  - GET  /health (Health check)`);
+LogAPI.log(`webhook server running on port ${WEBHOOK_PORT}`);
+LogAPI.log("endpoints:");
+LogAPI.log("  - POST /webhook (github webhooks)");
+LogAPI.log("  - GET  /health (health check)");
