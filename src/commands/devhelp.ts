@@ -5,6 +5,7 @@ import {
     SlashCommandBuilder,
 } from "discord.js";
 import type { Command } from "@/types/index.ts";
+import {check} from "@/commands/defaults";
 
 const ACTIONS = [{
     name: "Setup REPO SDK",
@@ -48,6 +49,8 @@ export default {
             .setAutocomplete(true)
         ),
 
+    permissionCheck: check,
+
     async autocomplete(client: Client, interaction: AutocompleteInteraction) {
         await interaction.respond(ACTIONS.map(ev => ({name: ev.name, value: ev.value})));
     },
@@ -59,4 +62,4 @@ export default {
         const target = ACTIONS.find(x => x.value == link)
         await interaction.reply({...target?.message})
     }
-} satisfies Command
+}

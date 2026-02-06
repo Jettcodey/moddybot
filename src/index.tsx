@@ -86,6 +86,10 @@ client.on("interactionCreate", async (interaction: Interaction) => {
 
     const command = commands.getCommand(interaction.commandName);
     if (command) {
+        const hasPermission = await command.permissionCheck!(client, interaction);
+        if (!hasPermission.result) {
+            return await interaction.reply({content: hasPermission.message, embeds: hasPermission.embeds, ephemeral: hasPermission.hide || false});
+        }
         await command.execute(client, interaction);
     }
 })

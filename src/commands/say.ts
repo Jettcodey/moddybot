@@ -1,12 +1,9 @@
 import {
     type ChatInputCommandInteraction,
     type Client,
-    type GuildMember,
-    type Interaction,
     SlashCommandBuilder,
-    type Snowflake
 } from "discord.js";
-import {getConfig} from "@/utils/config.ts";
+import {check} from "@/commands/defaults";
 
 export default {
     data: new SlashCommandBuilder()
@@ -17,19 +14,13 @@ export default {
             .setDescription('say')
             .setRequired(true)
         ),
+
+    permissionCheck: check,
+
     async execute(client: Client, interaction: ChatInputCommandInteraction) {
         const guild = interaction.guild;
         const say = interaction.options.getString("say");
         if (!say || !guild) return;
-
-        const requiredRole = await guild.roles.fetch(process.env.MINIMUM_ROLE_REQUIRED as Snowflake);
-        const member = interaction.member as GuildMember;
-        const hasRequiredRole = requiredRole && member.roles.highest.position >= requiredRole.position;
-
-        if (!hasRequiredRole) {
-            await interaction.reply({content: 'Invalid permissions', ephemeral: true});
-            return;
-        }
 
         await interaction.reply({
             content: say
