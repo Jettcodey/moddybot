@@ -2,15 +2,15 @@
 
 set -e
 
-echo "🚀 Starting deployment..."
+echo "Starting deployment..."
 
-echo "📥 Pulling latest changes from GitHub..."
+echo "Pulling latest changes from GitHub..."
 git pull origin main
 
-echo "📦 Installing dependencies..."
+echo "Installing dependencies..."
 bun install
 
-echo "🔄 Restarting bot with systemd..."
+echo "Restarting bot with systemd..."
 sudo systemctl restart moddybot
 
-echo "✅ Deployment complete!"
+echo "Deployment complete!"
