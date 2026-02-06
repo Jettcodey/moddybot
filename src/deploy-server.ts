@@ -1,42 +1,108 @@
-import { serve } from "bun";
-import { exec } from "child_process";
+import { LogAPI } from "@/utils/logger.ts";
 
-const PORT = 3000;
+const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || "";
+const WEBHOOK_PORT = parseInt(process.env.WEBHOOK_PORT || "3000");
 
-console.log(`Deploy server listening on port ${PORT}`);
+interface GitHubWebhookPayload {
+    ref?: string;
+    repository?: {
+        full_name: string;
+        clone_url: string;
+    };
+    pusher?: {
+        name: string;
+    };
+}
 
-serve({
-    port: PORT,
-    async fetch(req) {
-        if (req.method === "POST" && new URL(req.url).pathname === "/webhook") {
-            console.log("Received webhook, pulling interactions...");
+function verifyGitHubSignature(payload: string, signature: string): boolean {
+    if (!signature || !signature.startsWith("sha256=")) {
+        return false;
+    }
 
-            try {
-                const pullProc = Bun.spawn(["git", "pull"], {
-                    cwd: process.cwd(),
-                    stdout: "pipe",
-                    stderr: "pipe",
-                });
+    const crypto = new Bun.CryptoHasher("sha256", WEBHOOK_SECRET);
+    const digest = "sha256=" + crypto.update(payload).digest("hex");
 
-                const pullOutput = await new Response(pullProc.stdout).text();
-                console.log("Git Pull Output:", pullOutput);
+    return signature === digest;
+}
 
-                const restartProc = Bun.spawn(["pm2", "restart", "all"], {
-                    cwd: process.cwd(),
-                    stdout: "pipe",
-                    stderr: "pipe",
-                });
+async function executeDeploy() {
+    LogAPI.log("Starting deployment...");
 
-                const restartOutput = await new Response(restartProc.stdout).text();
-                console.log("PM2 Cleanup Output:", restartOutput);
+    const proc = Bun.spawn(["bash", "deploy.sh"], {
+        cwd: process.cwd(),
+        stdout: "pipe",
+        stderr: "pipe",
+    });
 
-                return new Response("Deployed successfully", { status: 200 });
-            } catch (error) {
-                console.error("Deployment failed:", error);
-                return new Response("Deployment failed", { status: 500 });
-            }
+    const stdout = await new Response(proc.stdout).text();
+    const stderr = await new Response(proc.stderr).text();
+    const exitCode = await proc.exited;
+
+    if (exitCode === 0) {
+        LogAPI.success("Deployment completed successfully");
+        LogAPI.log(stdout);
+    } else {
+        LogAPI.error("Deployment failed");
+        LogAPI.error(stderr);
+    }
+
+    return exitCode === 0;
+}
+
+const server = Bun.serve({
+    port: WEBHOOK_PORT,
+    async fetch(req: Request) {
+        const url = new URL(req.url);
+
+        if (url.pathname === "/health") {
+            return new Response(JSON.stringify({ status: "ok" }), {
+                headers: { "Content-Type": "application/json" },
+            });
         }
 
-        return new Response("Not Found", { status: 404 });
+        if (url.pathname === "/webhook" && req.method === "POST") {
+            const signature = req.headers.get("x-hub-signature-256") || "";
+            const event = req.headers.get("x-github-event") || "";
+
+            const payload = await req.text();
+
+            if (!verifyGitHubSignature(payload, signature)) {
+                LogAPI.error("Invalid webhook signature");
+                return new Response(JSON.stringify({ error: "Invalid signature" }), {
+                    status: 401,
+                    headers: { "Content-Type": "application/json" },
+                });
+            }
+
+            if (event !== "push") {
+                return new Response(JSON.stringify({ message: "Event ignored" }), {
+                    headers: { "Content-Type": "application/json" },
+                });
+            }
+
+            const data: GitHubWebhookPayload = JSON.parse(payload);
+
+            LogAPI.log(`Received push event from ${data.pusher?.name}`);
+            LogAPI.log(`Repository: ${data.repository?.full_name}`);
+            LogAPI.log(`Ref: ${data.ref}`);
+
+            const success = await executeDeploy();
+
+            return new Response(
+                JSON.stringify({
+                    message: success ? "Deployment triggered" : "Deployment failed",
+                }),
+                {
+                    headers: { "Content-Type": "application/json" },
+                }
+            );
+        }
+
+        return new Response("Not found", { status: 404 });
     },
 });
+
+LogAPI.success(`Webhook server running on port ${WEBHOOK_PORT}`);
+LogAPI.log("Endpoints:");
+LogAPI.log(`  - POST /webhook (GitHub webhooks)`);
+LogAPI.log(`  - GET  /health (Health check)`);
