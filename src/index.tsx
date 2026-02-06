@@ -10,7 +10,7 @@ import {
     type Snowflake,
     type TextChannel,
     type ThreadChannel,
-    type ForumChannel,
+    type ForumChannel, REST, Routes, Activity,
 } from "discord.js";
 import { Commands } from "@/commands/index.ts";
 import { Author, buildEmbed, Embed, Field, Footer, h, Fragment, deployCommands } from "@/helpers/index.tsx";
@@ -33,6 +33,13 @@ client.on('clientReady', async () => {
     LogAPI.log('Ready!');
     await deployCommands(commands);
     await eventsManager.loadEvents();
+
+    client && client.user!.setPresence({
+        status: "online",
+        activities: [{
+            name: "Watching Skript",
+        }]
+    })
 
     eventsManager.getEvents().forEach(event => {
         client.on(event.name, event.execute)
@@ -112,5 +119,15 @@ client.on('guildMemberAdd', async (member: GuildMember) => {
         });
     }
 })
+
+
+// const rest = new REST().setToken(process.env.TOKEN);
+// rest.post(Routes.channelMessages('1344557689979670582'), {
+//     body: {
+//         content: 'HEY NO',
+//         flags: 0,
+//         tts: false
+//     }
+// });
 
 await client.login(process.env.TOKEN)

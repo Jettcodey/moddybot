@@ -6,6 +6,9 @@
   "devDependencies": {
     "@types/bun": "latest"
   },
+  "scripts": {
+    "start": "bun --env-file=.env ./src/index.tsx"
+  },
   "peerDependencies": {
     "typescript": "^5"
   },

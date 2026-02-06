@@ -1,4 +1,10 @@
-import {SlashCommandBuilder, type Client, type ChatInputCommandInteraction, type Snowflake} from "discord.js";
+import {
+    SlashCommandBuilder,
+    type Client,
+    type ChatInputCommandInteraction,
+    type Snowflake,
+    type GuildMember
+} from "discord.js";
 
 export default {
     data: new SlashCommandBuilder()
@@ -21,9 +27,9 @@ export default {
         const member = await guild.members.fetch(targetUser.id);
 
         const requiredRole = await guild.roles.fetch(process.env.MINIMUM_ROLE_REQUIRED as Snowflake);
-        const isNotHighEnough = requiredRole && member.roles.highest.position < requiredRole.position;
+        const hasRequiredRole = requiredRole && member.roles.highest.position >= requiredRole.position;
 
-        if (isNotHighEnough) {
+        if (!hasRequiredRole) {
             await interaction.reply({content: 'Invalid permissions', ephemeral: true});
             return;
         }
