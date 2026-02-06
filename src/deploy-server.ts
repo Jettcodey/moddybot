@@ -1,7 +1,13 @@
 import { LogAPI } from "@/utils/logger.ts";
+import { REST, Routes } from "discord.js";
 
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || "";
 const WEBHOOK_PORT = parseInt(process.env.WEBHOOK_PORT || "3000");
+const DISCORD_TOKEN = process.env.TOKEN || "";
+const GUILD_ID = process.env.GUILD_ID || "";
+const MODDYBOTPUSH_ID = process.env.MODDYBOTPUSH_ID || "";
+
+const rest = new REST().setToken(DISCORD_TOKEN);
 
 interface GitHubWebhookPayload {
     ref?: string;
@@ -12,6 +18,9 @@ interface GitHubWebhookPayload {
     pusher?: {
         name: string;
     };
+    commits?: Array<{
+        message: string;
+    }>;
 }
 
 function verifyGitHubSignature(payload: string, signature: string): boolean {
@@ -25,12 +34,48 @@ function verifyGitHubSignature(payload: string, signature: string): boolean {
     return signature === digest;
 }
 
-async function executeDeploy() {
+async function sendDiscordMessage(content: string, embed?: any) {
+    if (!MODDYBOTPUSH_ID || !DISCORD_TOKEN) {
+        LogAPI.log("Discord notifications not configured");
+        return;
+    }
+
+    try {
+        await rest.post(Routes.channelMessages(MODDYBOTPUSH_ID), {
+            body: embed ? { content, embeds: [embed] } : { content }
+        });
+    } catch (error) {
+        LogAPI.err(`Failed to send Discord notification: ${error}`);
+    }
+}
+
+async function executeDeploy(commitMessage?: string, pusher?: string) {
     LogAPI.log("Starting deployment...");
 
     const repoDir = "/home/cole/moddybot";
 
     try {
+        const embed = {
+            title: "🔄 ModdyBot is Restarting!",
+            description: commitMessage || "Deploying latest changes...",
+            color: 0xffa500,
+            fields: [
+                {
+                    name: "Pushed by",
+                    value: pusher || "Unknown",
+                    inline: true
+                },
+                {
+                    name: "Status",
+                    value: "⏳ Pulling changes...",
+                    inline: true
+                }
+            ],
+            timestamp: new Date().toISOString()
+        };
+
+        await sendDiscordMessage("", embed);
+
         LogAPI.log("Pulling latest changes...");
         const gitPull = Bun.spawn(["git", "pull", "origin", "main"], {
             cwd: repoDir,
@@ -51,6 +96,8 @@ async function executeDeploy() {
 
         await bunInstall.exited;
 
+        await sendDiscordMessage("🛑 ModdyBot is stopping...");
+
         LogAPI.log("Restarting bot...");
         const restart = Bun.spawn(["sudo", "systemctl", "restart", "moddybot"], {
             cwd: repoDir,
@@ -64,15 +111,35 @@ async function executeDeploy() {
 
         if (exitCode === 0) {
             LogAPI.log("✅ Deployment completed successfully");
+
+            const successEmbed = {
+                title: "✅ ModdyBot is Back Online!",
+                description: "Deployment completed successfully",
+                color: 0x00ff00,
+                fields: [
+                    {
+                        name: "Changes",
+                        value: commitMessage || "Latest updates deployed",
+                        inline: false
+                    }
+                ],
+                timestamp: new Date().toISOString()
+            };
+
+            await sendDiscordMessage("", successEmbed);
             return true;
         } else {
             LogAPI.err("❌ Deployment failed");
             LogAPI.err(stderr);
+
+            await sendDiscordMessage("❌ Deployment failed! Check logs for details.");
             return false;
         }
     } catch (error) {
         LogAPI.err("❌ Deployment error");
         LogAPI.err(String(error));
+
+        await sendDiscordMessage("❌ Deployment error! Check logs for details.");
         return false;
     }
 }
@@ -114,7 +181,10 @@ const server = Bun.serve({
             LogAPI.log(`Repository: ${data.repository?.full_name}`);
             LogAPI.log(`Ref: ${data.ref}`);
 
-            const success = await executeDeploy();
+            const commitMessage = data.commits?.[0]?.message || "No commit message";
+            const pusher = data.pusher?.name || "Unknown";
+
+            const success = await executeDeploy(commitMessage, pusher);
 
             return new Response(
                 JSON.stringify({
