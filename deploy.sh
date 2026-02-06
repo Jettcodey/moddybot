@@ -2,7 +2,7 @@
 
 set -e
 
-cd "$(dirname "$0")"
+cd /home/cole/moddybot
 
 echo "Starting deployment..."
 
