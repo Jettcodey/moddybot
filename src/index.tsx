@@ -37,7 +37,8 @@ client.on('clientReady', async () => {
     client && client.user!.setPresence({
         status: "online",
         activities: [{
-            name: "Watching over REPO Modding",
+            name: "Watching over Atomic >:3",
+            state: "a ton of people are too ;3",
         }]
     })
 

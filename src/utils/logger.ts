@@ -17,6 +17,11 @@ class Logger {
         logger.color("red")
         logger.log(`[${this.prefix}]:`,...args);
     }
+
+    warn(...args: any[]): any {
+        logger.color("yellow")
+        logger.log(`[${this.prefix}]:`,...args);
+    }
 }
 
 export const LogAPI = new Logger("MODDY");
