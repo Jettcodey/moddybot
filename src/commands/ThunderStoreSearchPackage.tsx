@@ -112,7 +112,6 @@ export default {
             const url = await fetch(`https://thunderstore.io/api/cyberstorm/listing/repo/?q=${owner}`)
             const data: ThunderstoreListingResponse = await url.json();
 
-            console.log(data)
             const embed = buildEmbed(
                 <Embed
                     title={`Packages by ${owner}`}
