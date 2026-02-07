@@ -96,3 +96,10 @@ export async function deployCommands(manager: Commands): Promise<void> {
         LogAPI.err(error);
     }
 }
+
+const EXPERIMENT = `https://thunderstore.io/api/experimental/`
+
+export function makeUrl(...args: string[])
+{
+    return `${EXPERIMENT}${args.join('/')}`
+}

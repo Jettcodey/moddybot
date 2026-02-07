@@ -38,7 +38,7 @@ client.on('clientReady', async () => {
         status: "online",
         activities: [{
             name: "Watching over Atomic >:3",
-            state: "a ton of people are too ;3",
+            state: "is it PEAK or not?",
         }]
     })
 
