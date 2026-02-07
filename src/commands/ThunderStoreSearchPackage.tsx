@@ -54,9 +54,21 @@ export default {
 
         if (!owner || !packageName) return;
 
-        const url = makeUrl('package', owner, packageName)
-        const response = await fetch(url);
-        const packageData = await response.json() as ThunderstorePackage;
+        let packageData: ThunderstorePackage = {};
+        try {
+            const url = makeUrl('package', owner, packageName)
+            const response = await fetch(url);
+            throw new Error(response.statusText)
+            // packageData = await response.json() as ThunderstorePackage;
+        } catch (error) {
+            packageData.error = error;
+        }
+
+        if (!packageData || packageData.error) {
+            await interaction.reply({
+                content: `Failed to fetch package: ${packageName} ${packageData.error}`,
+            })
+        }
 
         await interaction.reply({
             embeds: [
