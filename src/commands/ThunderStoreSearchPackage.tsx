@@ -113,7 +113,7 @@ export default {
                                 inline={true}
                             />
                             <Field
-                                name="⬇Downloads"
+                                name="Downloads"
                                 value={formatNumber(packageData.latest.downloads)}
                                 inline={true}
                             />
@@ -124,7 +124,7 @@ export default {
                             />
 
                             <Field
-                                name="🏷Categories"
+                                name="Categories"
                                 value={categories}
                                 inline={false}
                             />
