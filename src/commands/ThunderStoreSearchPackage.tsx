@@ -56,7 +56,7 @@ export default {
 
         const url = makeUrl('package', owner, packageName)
         const response = await fetch(url);
-        const packageData: ThunderstorePackage = await response.json();
+        const packageData = await response.json() as ThunderstorePackage;
 
         await interaction.reply({
             embeds: [
