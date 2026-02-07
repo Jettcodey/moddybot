@@ -85,6 +85,45 @@ function formatNumber(num: number): string {
     return num.toLocaleString('en-US');
 }
 
+// 753 can probably tell that im running this outside the browser. so lets spoof it.
+async function thunderstoreFetch<T>(url: string): Promise<T> {
+    const userAgents = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15'
+    ];
+
+    const randomUserAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
+
+    const response = await fetch(url, {
+        method: 'GET',
+        // @ts-ignore
+        headers: {
+            'User-Agent': randomUserAgent,
+            'Accept': 'application/json, text/plain, */*',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'DNT': '1',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
+            'Sec-Fetch-Dest': 'empty',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Site': 'same-origin',
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
+            'Referer': 'https://thunderstore.io/',
+            'Origin': 'https://thunderstore.io'
+        }
+    });
+
+    if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    return await response.json() as T;
+}
+
 export default {
     data: new SlashCommandBuilder()
         .setName("search")
@@ -109,47 +148,54 @@ export default {
         await interaction.deferReply();
 
         if (!packageName) {
-            const url = await fetch(`https://thunderstore.io/api/cyberstorm/listing/repo/?q=${owner}`)
-            const data: ThunderstoreListingResponse = await url.json();
+            try {
+                const data = await thunderstoreFetch<ThunderstoreListingResponse>(
+                    `https://thunderstore.io/api/cyberstorm/listing/repo/?q=${encodeURIComponent(owner)}`
+                );
 
-            const embed = buildEmbed(
-                <Embed
-                    title={`Packages by ${owner}`}
-                    description={`Found ${data.results.length} package${data.results.length !== 1 ? 's' : ''}`}
-                    color={0x5865F2}
-                >
-                    {data.results.slice(0, 10).map(x => (
-                        <Field
-                            key={x.name}
-                            name={`${x.name} - ${x.namespace}`}
-                            value={`${formatNumber(x.download_count)} Downloads • ${x.rating_count} Ratings\n[View on Thunderstore](https://thunderstore.io/c/repo/p/${x.namespace}/${x.name}/)`}
-                            inline={false}
-                        />
-                    ))}
-                    {data.results.length > 25 && (
-                        <Footer text={`Showing 25 of ${data.results.length} results • Visit Thunderstore for more`} />
-                    )}
-                </Embed>
-            )
+                if (data.results.length === 0) {
+                    await interaction.editReply({
+                        content: `No packages found for: \`${owner}\``,
+                    });
+                    return;
+                }
 
-            return await interaction.editReply({
-                embeds: [embed]
-            })
+                const embed = buildEmbed(
+                    <Embed
+                        title={`📦 Packages by ${owner}`}
+                        description={`Found ${data.results.length} package${data.results.length !== 1 ? 's' : ''}`}
+                        color={0x5865F2}
+                    >
+                        {data.results.slice(0, 25).map(x => (
+                            <Field
+                                key={x.name}
+                                name={`${x.name} - ${x.namespace}`}
+                                value={`${formatNumber(x.download_count)} Downloads • ${x.rating_count} Ratings\n[View on Thunderstore](https://thunderstore.io/c/repo/p/${x.namespace}/${x.name}/)`}
+                                inline={false}
+                            />
+                        ))}
+                        {data.results.length > 25 && (
+                            <Footer text={`Showing 25 of ${data.results.length} results • Visit Thunderstore for more`} />
+                        )}
+                    </Embed>
+                );
+
+                return await interaction.editReply({
+                    embeds: [embed]
+                });
+
+            } catch (error) {
+                await interaction.editReply({
+                    content: `Failed to search for packages: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                });
+                return;
+            }
         }
 
         const url = makeUrl('package', owner, packageName);
 
         try {
-            const response = await fetch(url);
-
-            if (!response.ok) {
-                await interaction.editReply({
-                    content: `❌ Package not found: \`${owner}/${packageName}\`\nMake sure the namespace and package name are correct.`,
-                });
-                return;
-            }
-
-            const packageData = await response.json() as ThunderstorePackage;
+            const packageData = await thunderstoreFetch<ThunderstorePackage>(url);
 
             const categories = packageData.community_listings[0]?.categories.join(', ') || 'None';
             const dependencies = packageData.latest.dependencies.length;
@@ -188,7 +234,7 @@ export default {
                             />
 
                             <Field
-                                name="Categories"
+                                name="🏷Categories"
                                 value={categories}
                                 inline={false}
                             />
@@ -226,8 +272,8 @@ export default {
 
         } catch (error) {
             await interaction.editReply({
-                content: `❌ Failed to fetch package: ${error instanceof Error ? error.message : 'Unknown error'}\n\nURL attempted: ${url}`,
+                content: `Failed to fetch package: ${error instanceof Error ? error.message : 'Unknown error'}\n\nURL attempted: ${url}`,
             });
         }
     }
-} satisfies Command;
+}
