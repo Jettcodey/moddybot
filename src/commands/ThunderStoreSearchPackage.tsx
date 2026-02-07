@@ -199,7 +199,7 @@ export default {
 
             const categories = packageData.community_listings[0]?.categories.join(', ') || 'None';
             const dependencies = packageData.latest.dependencies.length;
-            const isDeprecated = packageData.is_deprecated ? '⚠️ **DEPRECATED**' : '';
+            const isDeprecated = packageData.is_deprecated ? '⚠**DEPRECATED**' : '';
 
             await interaction.editReply({
                 embeds: [
@@ -234,7 +234,7 @@ export default {
                             />
 
                             <Field
-                                name="🏷Categories"
+                                name="Categories"
                                 value={categories}
                                 inline={false}
                             />
