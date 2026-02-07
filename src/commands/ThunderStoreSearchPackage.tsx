@@ -199,14 +199,14 @@ export default {
 
             const categories = packageData.community_listings[0]?.categories.join(', ') || 'None';
             const dependencies = packageData.latest.dependencies.length;
-            const isDeprecated = packageData.is_deprecated ? '⚠**DEPRECATED**' : '';
+            const isDeprecated = packageData.is_deprecated ? '**DEPRECATED**' : '';
 
             await interaction.editReply({
                 embeds: [
                     buildEmbed(
                         <Embed
                             title={packageData.full_name}
-                            url={packageData.package_url}
+                            url={`https://thunderstore.io/c/repo/p/${packageData.namespace}/${packageData.name}/`}
                             description={packageData.latest.description}
                             color={packageData.is_deprecated ? 0xFF6B6B : 0x5865F2}
                             thumbnail={packageData.latest.icon}
@@ -214,7 +214,7 @@ export default {
                             <Author
                                 name={`By ${packageData.owner}`}
                                 iconURL={packageData.latest.icon}
-                                url={`https://thunderstore.io/package/${packageData.owner}/`}
+                                url={`https://thunderstore.io/c/repo/p/${packageData.namespace}/${packageData.name}/`}
                             />
 
                             <Field
