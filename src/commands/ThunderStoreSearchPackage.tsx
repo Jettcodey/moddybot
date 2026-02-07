@@ -119,7 +119,7 @@ export default {
                     description={`Found ${data.results.length} package${data.results.length !== 1 ? 's' : ''}`}
                     color={0x5865F2}
                 >
-                    {data.results.slice(0, 25).map(x => (
+                    {data.results.slice(0, 10).map(x => (
                         <Field
                             key={x.name}
                             name={`${x.name} - ${x.namespace}`}
