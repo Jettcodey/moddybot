@@ -55,11 +55,10 @@ export default {
         if (!owner || !packageName) return;
 
         const url = makeUrl('package', owner, packageName)
-        let packageData: ThunderstorePackage = {};
+        let packageData: ThunderstorePackage = {} as ThunderstorePackage;
         try {
             const response = await fetch(url);
-            throw new Error(response.statusText)
-            // packageData = await response.json() as ThunderstorePackage;
+            packageData = await response.json() as ThunderstorePackage;
         } catch (error) {
             packageData.error = error;
         }
