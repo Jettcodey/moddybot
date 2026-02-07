@@ -47,7 +47,9 @@ export function buildEmbed(element: any): EmbedBuilder {
     }
 
     if (props.children) {
-        const children = Array.isArray(props.children) ? props.children : [props.children];
+        const children = Array.isArray(props.children)
+            ? props.children.flat(Infinity)
+            : [props.children];
 
         for (const child of children) {
             if (!child) continue;

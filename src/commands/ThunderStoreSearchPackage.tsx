@@ -1,6 +1,11 @@
-import {type ChatInputCommandInteraction, type Client, SlashCommandBuilder} from "discord.js";
+import {
+    type AutocompleteInteraction,
+    type ChatInputCommandInteraction,
+    type Client,
+    SlashCommandBuilder
+} from "discord.js";
 import type { Command } from "@/types";
-import {Author, buildEmbed, Embed, Field, h, makeUrl} from "@/helpers";
+import {Author, buildEmbed, Embed, Field, h, makeUrl, Fragment, Footer} from "@/helpers";
 import {check} from "@/commands/defaults";
 
 type ThunderstorePackage = {
@@ -41,6 +46,36 @@ type CommunityListing = {
     review_status: string;
 };
 
+type ThunderstoreListingResponse = {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: ThunderstoreListingItem[];
+};
+
+type ThunderstoreListingItem = {
+    categories: Category[];
+    community_identifier: string;
+    description: string;
+    download_count: number;
+    icon_url: string;
+    is_deprecated: boolean;
+    is_nsfw: boolean;
+    is_pinned: boolean;
+    last_updated: string;
+    name: string;
+    namespace: string;
+    rating_count: number;
+    size: number;
+    datetime_created: string;
+};
+
+type Category = {
+    id: string;
+    name: string;
+    slug: string;
+};
+
 function formatDate(dateString: string): string {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -56,22 +91,52 @@ export default {
         .setDescription("Search for a specific package on Thunderstore")
         .addStringOption(op => op
             .setName("namespace")
-            .setDescription("Author/namespace name")
+            .setDescription("Author/namespace name or package name")
             .setRequired(true)
         )
         .addStringOption(op => op
             .setName("package")
             .setDescription("Package name")
-            .setRequired(true)
+            .setRequired(false)
         ),
 
-    permissionCheck: check,
+    permissionCheck: () => ({result: true}),
 
     async execute(client: Client, interaction: ChatInputCommandInteraction) {
         const owner = interaction.options.getString("namespace", true);
-        const packageName = interaction.options.getString("package", true);
+        const packageName = interaction.options.getString("package", false);
 
         await interaction.deferReply();
+
+        if (!packageName) {
+            const url = await fetch(`https://thunderstore.io/api/cyberstorm/listing/repo/?q=${owner}`)
+            const data: ThunderstoreListingResponse = await url.json();
+
+            console.log(data)
+            const embed = buildEmbed(
+                <Embed
+                    title={`Packages by ${owner}`}
+                    description={`Found ${data.results.length} package${data.results.length !== 1 ? 's' : ''}`}
+                    color={0x5865F2}
+                >
+                    {data.results.slice(0, 25).map(x => (
+                        <Field
+                            key={x.name}
+                            name={`${x.name}`}
+                            value={`${formatNumber(x.download_count)} Downloads • ${x.rating_count} Ratings\n[View on Thunderstore](https://thunderstore.io/c/repo/p/${x.namespace}/${x.name}/)`}
+                            inline={false}
+                        />
+                    ))}
+                    {data.results.length > 25 && (
+                        <Footer text={`Showing 25 of ${data.results.length} results • Visit Thunderstore for more`} />
+                    )}
+                </Embed>
+            )
+
+            return await interaction.editReply({
+                embeds: [embed]
+            })
+        }
 
         const url = makeUrl('package', owner, packageName);
 
