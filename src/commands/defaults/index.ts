@@ -3,7 +3,11 @@ import type {ChatInputCommandInteraction, Client, GuildMember, Snowflake} from "
 export async function check(client: Client, interaction: ChatInputCommandInteraction) {
     const guild = interaction.guild;
 
-    const requiredRole = await guild?.roles?.fetch?.(process.env.MINIMUM_ROLE_REQUIRED as Snowflake);
+    if (!guild) {
+        return {result: false, message: 'This command can only be used in a server'};
+    }
+
+    const requiredRole = await guild.roles.fetch(process.env.MINIMUM_ROLE_REQUIRED as Snowflake);
     const member = interaction.member as GuildMember;
 
     if (!requiredRole) {
