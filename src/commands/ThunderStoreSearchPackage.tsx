@@ -130,7 +130,7 @@ export default {
         .setDescription("Search for a specific package on Thunderstore")
         .addStringOption(op => op
             .setName("namespace")
-            .setDescription("Author/namespace name or package name")
+            .setDescription("Author/namespace name or package name or a URL to the package")
             .setRequired(true)
         )
         .addStringOption(op => op
