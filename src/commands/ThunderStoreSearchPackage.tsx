@@ -142,8 +142,14 @@ export default {
     permissionCheck: () => ({result: true}),
 
     async execute(client: Client, interaction: ChatInputCommandInteraction) {
-        const owner = interaction.options.getString("namespace", true);
-        const packageName = interaction.options.getString("package", false);
+        let owner = interaction.options.getString("namespace", true);
+        let packageName = interaction.options.getString("package", false);
+
+        if (owner.startsWith("https://thunderstore.io")) {
+            const urlSplit = owner.split('/').filter(x=>x)
+            owner = urlSplit[urlSplit.length - 2]
+            packageName = urlSplit[urlSplit.length - 1]
+        }
 
         await interaction.deferReply();
 

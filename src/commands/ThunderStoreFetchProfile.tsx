@@ -124,6 +124,15 @@ export default {
                 { name: 'mods.txt' }
             );
 
+            const b64 = data.substring(PROFILE_DATA_PREFIX.length).trim();
+            const zipBuffer = Buffer.from(b64, "base64");
+
+            const ZipFile = new AttachmentBuilder(
+                zipBuffer,
+                { name: `${profileData.profileName.replace(/\s+/g, '_')}.r2z` }
+            );
+
+
             await interaction.editReply({
                 embeds: [
                     buildEmbed(
@@ -134,7 +143,7 @@ export default {
                         </Embed>
                     )
                 ],
-                files: [TextFile],
+                files: [TextFile, ZipFile],
             });
 
 
