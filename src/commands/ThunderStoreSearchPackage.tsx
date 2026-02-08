@@ -239,7 +239,7 @@ export default {
             const packageData = await thunderstoreFetch<ThunderstorePackage>(url);
 
             const categories = packageData.categories.map(x=>x.name).join(', ') || 'None';
-            const dependencies = packageData.dependencies.length;
+            const dependencies = packageData.dependencies.map(x=>x.name).join(', ') || 'None';
             const isDeprecated = packageData.is_deprecated ? '**DEPRECATED**' : '';
 
             await interaction.editReply({
