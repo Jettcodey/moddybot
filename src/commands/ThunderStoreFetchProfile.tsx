@@ -132,7 +132,6 @@ export default {
                 { name: `${profileData.profileName.replace(/\s+/g, '_')}.r2z` }
             );
 
-
             await interaction.editReply({
                 embeds: [
                     buildEmbed(
