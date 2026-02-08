@@ -23,7 +23,7 @@ export class Commands {
             if (!command?.permissionCheck) {
                 LogAPI.err(`Command ${command.data.name} does not have a permission check`);
             }
-z
+
             if (command.data)
             {
                 this.commands.set(command.data.name, command);
