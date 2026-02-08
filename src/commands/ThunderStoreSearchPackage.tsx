@@ -201,7 +201,7 @@ export default {
             const url = `https://thunderstore.io/api/cyberstorm/listing/repo/${matchingPackage.namespace}/${matchingPackage.name}` //makeUrl('package', matchingPackage.namespace, matchingPackage.name);
             const packageData = await thunderstoreFetch<ThunderstorePackage>(url);
 
-            const categories = packageData.categories.join(', ') || 'None';
+            const categories = packageData.categories.map(x=>x.name).join(', ') || 'None';
             const dependencies = packageData.dependencies.length;
             const isDeprecated = packageData.is_deprecated ? '**DEPRECATED**' : '';
 
@@ -216,7 +216,7 @@ export default {
                             thumbnail={packageData.icon_url}
                         >
                             <Author
-                                name={`By ${packageData.owner}`}
+                                name={`By ${packageData.namespace}`}
                                 iconURL={packageData.icon}
                                 url={`https://thunderstore.io/c/repo/p/${packageData.namespace}/${packageData.name}/`}
                             />
