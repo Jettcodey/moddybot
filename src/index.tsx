@@ -32,11 +32,12 @@ const eventsManager = new Events();
 const actions = ["Watching over", "Smirking at", "Looking at", "Playing with"]
 const suffix = [">:3", ":D", "", ":0", "👋"]
 
-function getRandomActivity() {
-    const user = client.users.cache.random();
+async function getRandomActivity() {
+    const users = ['704757796599496714','715791748273668126','518035931081474075','200308258890579968','1457406039036264591']
 
+    const randomUser = client.users.fetch(users.at(Math.floor(Math.random() * suffix.length)))
     return {
-        name: `${actions[Math.floor(Math.random() * actions.length)]} ${user?.username} ${suffix[Math.floor(Math.random() * suffix.length)]}`,
+        name: `${actions[Math.floor(Math.random() * actions.length)]} ${randomUser.username} ${suffix[Math.floor(Math.random() * suffix.length)]}`,
     }
 }
 
@@ -47,7 +48,7 @@ client.on('clientReady', async () => {
 
     client && client.user!.setPresence({
         status: "online",
-        activities: [getRandomActivity()]
+        activities: [await getRandomActivity()]
     })
 
     eventsManager.getEvents().forEach(event => {
