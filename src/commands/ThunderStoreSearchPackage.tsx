@@ -229,7 +229,7 @@ export default {
                             {packageData.website_url && (
                                 <Field
                                     name="Links"
-                                    value={`[Website](${packageData.website_url}) • [Download](${packageData.download_url})`}
+                                    value={`[Website](${packageData.website_url}) • [Download](${packageData.download_url}) • [Protocol](${packageData.install_url})`}
                                     inline={false}
                                 />
                             )}
