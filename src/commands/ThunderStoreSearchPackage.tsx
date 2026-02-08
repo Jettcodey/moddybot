@@ -198,7 +198,7 @@ export default {
                 return;
             }
 
-            const url = makeUrl('package', matchingPackage.namespace, matchingPackage.name);
+            const url = `https://thunderstore.io/api/cyberstorm/listing/repo/${matchingPackage.namespace}/${matchingPackage.name}` //makeUrl('package', matchingPackage.namespace, matchingPackage.name);
             const packageData = await thunderstoreFetch<ThunderstorePackage>(url);
 
             const categories = packageData.community_listings[0]?.categories.join(', ') || 'None';
@@ -209,7 +209,7 @@ export default {
                 embeds: [
                     buildEmbed(
                         <Embed
-                            title={packageData.full_name}
+                            title={packageData.name}
                             url={`https://thunderstore.io/c/repo/p/${packageData.namespace}/${packageData.name}/`}
                             description={packageData.latest.description}
                             color={packageData.is_deprecated ? 0xFF6B6B : 0x5865F2}
@@ -221,7 +221,7 @@ export default {
                                 url={`https://thunderstore.io/c/repo/p/${packageData.namespace}/${packageData.name}/`}
                             />
                             <Field name="Version" value={packageData.latest.version_number} inline={true}/>
-                            <Field name="Downloads" value={formatNumber(packageData.total_download_count)} inline={true}/>
+                            <Field name="Downloads" value={formatNumber(packageData.download_count)} inline={true}/>
                             <Field name="Dependencies" value={dependencies.toString()} inline={true}/>
                             <Field name="Categories" value={categories} inline={false}/>
                             <Field name="Last Updated" value={formatDate(packageData.date_updated)} inline={true}/>
