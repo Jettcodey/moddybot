@@ -104,13 +104,7 @@ export async function deployCommands(manager: Commands): Promise<void> {
     const rest = new REST().setToken(process.env.TOKEN);
 
     try {
-        await rest.put(
-            Routes.applicationCommands(process.env.CLIENT_ID),
-            { body: commandsData },
-        );
-
-        LogAPI.log('Refreshed all commands globally with user install support.');
-
+        // Optionally, also deploy to your test guild for instant updates during development
         if (process.env.GUILD_ID) {
             await rest.put(
                 Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
