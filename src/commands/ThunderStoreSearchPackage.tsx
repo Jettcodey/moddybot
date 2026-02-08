@@ -8,7 +8,7 @@ import type {Command} from "@/types";
 import {Author, buildEmbed, Embed, Field, h, makeUrl, Fragment, Footer} from "@/helpers";
 import {check} from "@/commands/defaults";
 
-type ThunderstorePackage = {
+type ThunderstoreListingPackage = {
     namespace: string;
     name: string;
     full_name: string;
@@ -22,6 +22,8 @@ type ThunderstorePackage = {
     total_downloads: number;
     latest: PackageVersion;
     community_listings: CommunityListing[];
+    download_count: number;
+    rating_count: number;
 };
 
 type PackageVersion = {
@@ -50,25 +52,60 @@ type ThunderstoreListingResponse = {
     count: number;
     next: string | null;
     previous: string | null;
-    results: ThunderstoreListingItem[];
+    results: ThunderstoreListingPackage[];
 };
 
-type ThunderstoreListingItem = {
-    categories: Category[];
+interface ThunderstoreCategory {
+    id: string;
+    name: string;
+    slug: string;
+}
+
+interface ThunderstoreDependency {
     community_identifier: string;
     description: string;
-    download_count: number;
     icon_url: string;
+    is_active: boolean;
+    name: string;
+    namespace: string;
+    version_number: string;
+    is_removed: boolean;
+    is_unavailable: boolean;
+}
+
+interface ThunderstoreTeam {
+    name: string;
+    members: any[];
+}
+
+interface ThunderstorePackage {
+    categories: ThunderstoreCategory[];
+    community_identifier: string;
+    community_name: string;
+    datetime_created: string;
+    dependant_count: number;
+    dependencies: ThunderstoreDependency[];
+    dependency_count: number;
+    description: string;
+    download_count: number;
+    download_url: string;
+    full_version_name: string;
+    has_changelog: boolean;
+    icon_url: string;
+    install_url: string;
     is_deprecated: boolean;
     is_nsfw: boolean;
     is_pinned: boolean;
     last_updated: string;
+    latest_version_number: string;
     name: string;
     namespace: string;
     rating_count: number;
     size: number;
-    datetime_created: string;
-};
+    team: ThunderstoreTeam;
+    version_count: number;
+    website_url: string;
+}
 
 type Category = {
     id: string;
@@ -198,7 +235,7 @@ export default {
                 return;
             }
 
-            const url = `https://thunderstore.io/api/cyberstorm/listing/repo/${matchingPackage.namespace}/${matchingPackage.name}` //makeUrl('package', matchingPackage.namespace, matchingPackage.name);
+            const url = `https://thunderstore.io/api/cyberstorm/listing/repo/${matchingPackage.namespace}/${matchingPackage.name}`;
             const packageData = await thunderstoreFetch<ThunderstorePackage>(url);
 
             const categories = packageData.categories.map(x=>x.name).join(', ') || 'None';
