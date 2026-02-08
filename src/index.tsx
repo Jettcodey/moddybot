@@ -37,7 +37,7 @@ async function getRandomActivity() {
     const randomChoice = (arr) => arr[Math.floor(Math.random() * arr.length)];
     const randomUser = await client.users.fetch(randomChoice(users));
     return {
-        name: `${randomChoice(actions)} ${randomUser.username} ${randomChoice(suffix)}`,
+        name: `${randomChoice(actions)} ${randomUser?.globalName || randomUser.username} ${randomChoice(suffix)}`,
     }
 }
 
