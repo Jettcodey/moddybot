@@ -12,8 +12,8 @@ import {
     type ThreadChannel,
     type ForumChannel, REST, Routes, Activity,
 } from "discord.js";
-import { Commands } from "@/commands/index.ts";
-import { Author, buildEmbed, Embed, Field, Footer, h, Fragment, deployCommands } from "@/helpers/index.tsx";
+import {Commands} from "@/commands/index.ts";
+import {Author, buildEmbed, Embed, Field, Footer, h, Fragment, deployCommands} from "@/helpers/index.tsx";
 import Events from "@/events/index.ts";
 import {LogAPI} from "@/utils/logger.ts";
 
@@ -29,6 +29,17 @@ const client = new Client({
 const commands = new Commands();
 const eventsManager = new Events();
 
+const actions = ["Watching over", "Smirking at", "Looking at", "Playing with"]
+const suffix = [">:3", ":D", "", ":0", "👋"]
+
+function getRandomActivity() {
+    const user = client.users.cache.random();
+
+    return {
+        name: `${actions[Math.floor(Math.random() * actions.length)]} ${user?.username} ${suffix[Math.floor(Math.random() * suffix.length)]}`,
+    }
+}
+
 client.on('clientReady', async () => {
     LogAPI.log('Ready!');
     await deployCommands(commands);
@@ -36,10 +47,7 @@ client.on('clientReady', async () => {
 
     client && client.user!.setPresence({
         status: "online",
-        activities: [{
-            name: "Watching over Atomic >:3",
-            state: "is it PEAK or not?",
-        }]
+        activities: [getRandomActivity()]
     })
 
     eventsManager.getEvents().forEach(event => {
@@ -58,9 +66,9 @@ client.on("threadCreate", async (thread: ThreadChannel, newlyCreated: boolean) =
                     description={`A new mod has been posted. Please determine if the publisher has the role or not. Use /modder <user> to give the user the verified role.`}
                     color={0x5865F2}
                 >
-                    <Field name="Thread Name" value={thread.name} inline={true} />
-                    <Field name="Link" value={`<#${thread.id}>`} inline={true} />
-                    <Field name="Created By" value={`<@${thread.ownerId}>`} inline={true} />
+                    <Field name="Thread Name" value={thread.name} inline={true}/>
+                    <Field name="Link" value={`<#${thread.id}>`} inline={true}/>
+                    <Field name="Created By" value={`<@${thread.ownerId}>`} inline={true}/>
                 </Embed>
             );
 
