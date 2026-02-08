@@ -49,7 +49,7 @@ export default {
             .setAutocomplete(true)
         ),
 
-    permissionCheck: check,
+    permissionCheck: () => ({result: true}),
 
     async autocomplete(client: Client, interaction: AutocompleteInteraction) {
         await interaction.respond(ACTIONS.map(ev => ({name: ev.name, value: ev.value})));
