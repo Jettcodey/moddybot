@@ -221,7 +221,7 @@ export default {
                                 url={`https://thunderstore.io/c/repo/p/${packageData.namespace}/${packageData.name}/`}
                             />
                             <Field name="Version" value={packageData.latest.version_number} inline={true}/>
-                            <Field name="Downloads" value={formatNumber(packageData.latest.downloads)} inline={true}/>
+                            <Field name="Downloads" value={formatNumber(packageData.total_downloads)} inline={true}/>
                             <Field name="Dependencies" value={dependencies.toString()} inline={true}/>
                             <Field name="Categories" value={categories} inline={false}/>
                             <Field name="Last Updated" value={formatDate(packageData.date_updated)} inline={true}/>
