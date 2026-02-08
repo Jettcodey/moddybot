@@ -197,9 +197,23 @@ export default {
             }
         }
 
-        const url = makeUrl('package', owner, packageName);
-
         try {
+            const data = await thunderstoreFetch<ThunderstoreListingResponse>(
+                `https://thunderstore.io/api/cyberstorm/listing/repo/?q=${encodeURIComponent(owner)}`
+            );
+
+            const matchingPackage = data.results.find(pkg =>
+                pkg.name.toLowerCase().includes(packageName.toLowerCase())
+            );
+
+            if (!matchingPackage) {
+                await interaction.editReply({
+                    content: `No package matching "${packageName}" found for namespace: \`${owner}\``,
+                });
+                return;
+            }
+
+            const url = makeUrl('package', matchingPackage.namespace, matchingPackage.name);
             const packageData = await thunderstoreFetch<ThunderstorePackage>(url);
 
             const categories = packageData.community_listings[0]?.categories.join(', ') || 'None';
@@ -277,7 +291,7 @@ export default {
 
         } catch (error) {
             await interaction.editReply({
-                content: `Failed to fetch package: ${error instanceof Error ? error.message : 'Unknown error'}\n\nURL attempted: ${url}`,
+                content: `Failed to fetch package: ${error instanceof Error ? error.message : 'Unknown error'}`,
             });
         }
     }
