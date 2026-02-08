@@ -201,8 +201,8 @@ export default {
             const url = `https://thunderstore.io/api/cyberstorm/listing/repo/${matchingPackage.namespace}/${matchingPackage.name}` //makeUrl('package', matchingPackage.namespace, matchingPackage.name);
             const packageData = await thunderstoreFetch<ThunderstorePackage>(url);
 
-            const categories = packageData.community_listings[0]?.categories.join(', ') || 'None';
-            const dependencies = packageData.latest.dependencies.length;
+            const categories = packageData.categories.join(', ') || 'None';
+            const dependencies = packageData.dependencies.length;
             const isDeprecated = packageData.is_deprecated ? '**DEPRECATED**' : '';
 
             await interaction.editReply({
@@ -211,25 +211,25 @@ export default {
                         <Embed
                             title={packageData.name}
                             url={`https://thunderstore.io/c/repo/p/${packageData.namespace}/${packageData.name}/`}
-                            description={packageData.latest.description}
+                            description={packageData.description}
                             color={packageData.is_deprecated ? 0xFF6B6B : 0x5865F2}
-                            thumbnail={packageData.latest.icon}
+                            thumbnail={packageData.icon_url}
                         >
                             <Author
                                 name={`By ${packageData.owner}`}
-                                iconURL={packageData.latest.icon}
+                                iconURL={packageData.icon}
                                 url={`https://thunderstore.io/c/repo/p/${packageData.namespace}/${packageData.name}/`}
                             />
-                            <Field name="Version" value={packageData.latest.version_number} inline={true}/>
                             <Field name="Downloads" value={formatNumber(packageData.download_count)} inline={true}/>
                             <Field name="Dependencies" value={dependencies.toString()} inline={true}/>
                             <Field name="Categories" value={categories} inline={false}/>
-                            <Field name="Last Updated" value={formatDate(packageData.date_updated)} inline={true}/>
-                            <Field name="Created" value={formatDate(packageData.date_created)} inline={true}/>
-                            {packageData.latest.website_url && (
+                            <Field name="Last Updated" value={formatDate(packageData.last_updated)} inline={true}/>
+                            <Field name="Created" value={formatDate(packageData.datetime_created)} inline={true}/>
+                            <Field name="Version" value={packageData.latest_version_number} inline={true}/>
+                            {packageData.website_url && (
                                 <Field
                                     name="Links"
-                                    value={`[Website](${packageData.latest.website_url}) • [Download](${packageData.latest.download_url})`}
+                                    value={`[Website](${packageData.website_url}) • [Download](${packageData.download_url})`}
                                     inline={false}
                                 />
                             )}
