@@ -34,11 +34,10 @@ const suffix = [">:3", ":D", "", ":0", "👋"]
 
 async function getRandomActivity() {
     const users = ['704757796599496714','715791748273668126','518035931081474075','200308258890579968','1457406039036264591']
-
-    const randomUser = client.users.fetch(users.at(Math.floor(Math.random() * suffix.length)))
-    console.log(randomUser)
+    const randomChoice = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const randomUser = await client.users.fetch(randomChoice(users));
     return {
-        name: `${actions[Math.floor(Math.random() * actions.length)]} ${randomUser.username} ${suffix[Math.floor(Math.random() * suffix.length)]}`,
+        name: `${randomChoice(actions)} ${randomUser.username} ${randomChoice(suffix)}`,
     }
 }
 
