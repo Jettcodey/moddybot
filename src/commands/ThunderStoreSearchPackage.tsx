@@ -168,7 +168,6 @@ export default {
                     >
                         {data.results.slice(0, 25).map((x, index) => (
                             <Field
-                                key={x.name}
                                 name={`${x.name} - ${x.namespace}`}
                                 value={`${formatNumber(x.download_count)} Downloads • ${x.rating_count} Ratings\n[View on Thunderstore](https://thunderstore.io/c/repo/p/${x.namespace}/${x.name}/)`}
                                 inline={(index % 2 !== 2)}

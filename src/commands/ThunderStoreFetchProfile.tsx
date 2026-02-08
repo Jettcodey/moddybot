@@ -6,7 +6,9 @@ import {
     Attachment,
     AttachmentBuilder
 } from 'discord.js';
+// @ts-ignore
 import AdmZip from 'adm-zip';
+// @ts-ignore
 import * as yaml from 'js-yaml';
 import {Buffer} from 'node:buffer';
 import {buildEmbed, Embed, Field, Footer, h, Fragment} from "@/helpers";
@@ -87,7 +89,7 @@ export default {
             const zip = await decodeAndExtractProfile(data);
             const zipEntries = zip.getEntries();
 
-            const yamlEntry = zipEntries.find(entry =>
+            const yamlEntry = zipEntries.find((entry: { entryName: string; }) =>
                 entry.entryName.endsWith('.r2x') ||
                 entry.entryName.endsWith('.yml') ||
                 entry.entryName.endsWith('.yaml')
