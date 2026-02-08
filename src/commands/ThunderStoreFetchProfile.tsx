@@ -105,13 +105,22 @@ export default {
 
             const enabledMods = profileData.mods.filter(mod => mod.enabled);
 
-            const jsonData = enabledMods.map(mod => ({
+            /*const jsonData = enabledMods.map(mod => ({
                 name: mod.name,
                 version: `${mod.version.major}.${mod.version.minor}.${mod.version.patch}`,
                 enabled: enabledMods.includes(mod),
             }))
 
-            const JSONFile = new AttachmentBuilder(Buffer.from(JSON.stringify(jsonData, null, 2)), {name: 'mods.json'})
+            const JSONFile = new AttachmentBuilder(Buffer.from(JSON.stringify(jsonData, null, 2)), {name: 'mods.json'})*/
+
+            const textContent = enabledMods.map(mod =>
+                `${mod.name}, ${mod.version.major}.${mod.version.minor}.${mod.version.patch}`
+            ).join('\n');
+
+            const TextFile = new AttachmentBuilder(
+                Buffer.from(textContent, 'utf-8'),
+                { name: 'mods.txt' }
+            );
 
             await interaction.editReply({
                 embeds: [
@@ -123,7 +132,7 @@ export default {
                         </Embed>
                     )
                 ],
-                files: [JSONFile],
+                files: [TextFile],
             });
 
 
