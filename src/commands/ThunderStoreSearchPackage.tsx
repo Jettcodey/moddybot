@@ -153,19 +153,17 @@ export default {
 
         await interaction.deferReply();
 
-        if (!packageName) {
-            try {
-                const data = await thunderstoreFetch<ThunderstoreListingResponse>(
-                    `https://thunderstore.io/api/cyberstorm/listing/repo/?q=${encodeURIComponent(owner)}`
-                );
+        try {
+            const data = await thunderstoreFetch<ThunderstoreListingResponse>(
+                `https://thunderstore.io/api/cyberstorm/listing/repo/?q=${encodeURIComponent(owner)}`
+            );
 
-                if (data.results.length === 0) {
-                    await interaction.editReply({
-                        content: `No packages found for: \`${owner}\``,
-                    });
-                    return;
-                }
+            if (data.results.length === 0) {
+                await interaction.editReply({ content: `No packages found for: \`${owner}\`` });
+                return;
+            }
 
+            if (!packageName) {
                 const embed = buildEmbed(
                     <Embed
                         title={`Packages by ${owner}`}
@@ -184,23 +182,8 @@ export default {
                         )}
                     </Embed>
                 );
-
-                return await interaction.editReply({
-                    embeds: [embed]
-                });
-
-            } catch (error) {
-                await interaction.editReply({
-                    content: `Failed to search for packages: ${error instanceof Error ? error.message : 'Unknown error'}`,
-                });
-                return;
+                return await interaction.editReply({ embeds: [embed] });
             }
-        }
-
-        try {
-            const data = await thunderstoreFetch<ThunderstoreListingResponse>(
-                `https://thunderstore.io/api/cyberstorm/listing/repo/?q=${encodeURIComponent(owner)}`
-            );
 
             const matchingPackage = data.results.find(pkg =>
                 pkg.name.toLowerCase().includes(packageName.toLowerCase())
@@ -208,7 +191,7 @@ export default {
 
             if (!matchingPackage) {
                 await interaction.editReply({
-                    content: `No package matching "${packageName}" found for namespace: \`${owner}\``,
+                    content: `No package matching "${packageName}" found for namespace: \`${owner}\``
                 });
                 return;
             }
@@ -235,40 +218,12 @@ export default {
                                 iconURL={packageData.latest.icon}
                                 url={`https://thunderstore.io/c/repo/p/${packageData.namespace}/${packageData.name}/`}
                             />
-
-                            <Field
-                                name="Version"
-                                value={packageData.latest.version_number}
-                                inline={true}
-                            />
-                            <Field
-                                name="Downloads"
-                                value={formatNumber(packageData.latest.downloads)}
-                                inline={true}
-                            />
-                            <Field
-                                name="Dependencies"
-                                value={dependencies.toString()}
-                                inline={true}
-                            />
-
-                            <Field
-                                name="Categories"
-                                value={categories}
-                                inline={false}
-                            />
-
-                            <Field
-                                name="Last Updated"
-                                value={formatDate(packageData.date_updated)}
-                                inline={true}
-                            />
-                            <Field
-                                name="Created"
-                                value={formatDate(packageData.date_created)}
-                                inline={true}
-                            />
-
+                            <Field name="Version" value={packageData.latest.version_number} inline={true} />
+                            <Field name="Downloads" value={formatNumber(packageData.latest.downloads)} inline={true} />
+                            <Field name="Dependencies" value={dependencies.toString()} inline={true} />
+                            <Field name="Categories" value={categories} inline={false} />
+                            <Field name="Last Updated" value={formatDate(packageData.date_updated)} inline={true} />
+                            <Field name="Created" value={formatDate(packageData.date_created)} inline={true} />
                             {packageData.latest.website_url && (
                                 <Field
                                     name="Links"
@@ -276,14 +231,7 @@ export default {
                                     inline={false}
                                 />
                             )}
-
-                            {isDeprecated && (
-                                <Field
-                                    name="Status"
-                                    value={isDeprecated}
-                                    inline={false}
-                                />
-                            )}
+                            {isDeprecated && <Field name="Status" value={isDeprecated} inline={false} />}
                         </Embed>
                     )
                 ]
