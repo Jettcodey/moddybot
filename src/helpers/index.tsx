@@ -80,20 +80,44 @@ export function buildEmbed(element: any): EmbedBuilder {
     return embed;
 }
 
+import {
+    ApplicationIntegrationType,
+    InteractionContextType
+} from "discord.js";
+
 export async function deployCommands(manager: Commands): Promise<void> {
     await manager.loadCommands();
 
-    const commandsData = manager.getAllCommands().map(cmd => cmd.data.toJSON());
+    const commandsData = manager.getAllCommands().map(cmd => ({
+        ...cmd.data.toJSON(),
+        integration_types: [
+            ApplicationIntegrationType.GuildInstall,  // Works in servers
+            ApplicationIntegrationType.UserInstall    // Works in DMs/user context
+        ],
+        contexts: [
+            InteractionContextType.Guild,             // Can be used in servers
+            InteractionContextType.BotDM,             // Can be used in bot DMs
+            InteractionContextType.PrivateChannel     // Can be used in DMs/GDMs
+        ]
+    }));
 
     const rest = new REST().setToken(process.env.TOKEN);
 
     try {
         await rest.put(
-            Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
+            Routes.applicationCommands(process.env.CLIENT_ID),
             { body: commandsData },
         );
 
-        LogAPI.log('Refreshed all commands.');
+        LogAPI.log('Refreshed all commands globally with user install support.');
+
+        if (process.env.GUILD_ID) {
+            await rest.put(
+                Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
+                { body: commandsData },
+            );
+            LogAPI.log('Refreshed guild commands.');
+        }
     } catch (error) {
         LogAPI.err(error);
     }
