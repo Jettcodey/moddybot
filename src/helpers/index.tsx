@@ -104,10 +104,10 @@ export async function deployCommands(manager: Commands): Promise<void> {
     const rest = new REST().setToken(process.env.TOKEN);
 
     try {
-        await rest.put(
-            Routes.applicationCommands(process.env.CLIENT_ID),
-            { body: commandsData },
-        );
+        // await rest.put(
+        //     Routes.applicationCommands(process.env.CLIENT_ID),
+        //     { body: commandsData },
+        // );
 
         if (process.env.GUILD_ID) {
             await rest.put(
