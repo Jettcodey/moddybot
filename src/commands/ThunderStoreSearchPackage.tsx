@@ -137,13 +137,14 @@ export default {
             .setName("package")
             .setDescription("Package name")
             .setRequired(false)
-        ),
+        ).addBooleanOption(op => op.setName("fuzz").setDescription("fuzz searching").setRequired(false)),
 
     permissionCheck: () => ({result: true}),
 
     async execute(client: Client, interaction: ChatInputCommandInteraction) {
         let owner = interaction.options.getString("namespace", true);
         let packageName = interaction.options.getString("package", false);
+        let shouldFuzz = interaction.options.getBoolean("fuzz", false);
 
         if (owner.startsWith("https://thunderstore.io")) {
             const urlSplit = owner.split('/').filter(x=>x)
@@ -163,7 +164,7 @@ export default {
                 return;
             }
 
-            if (!packageName) {
+            if (!packageName || !shouldFuzz) {
                 const embed = buildEmbed(
                     <Embed
                         title={`Packages by ${owner}`}
