@@ -240,6 +240,10 @@ export default {
 
             if (!packageData)
             {
+                await interaction.editReply({
+                    content: "Cyberstorm API failed to retrieve information, Probably old package. Trying legacy"
+                })
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 packageData = await thunderstoreFetch<ThunderstorePackage>(`https://thunderstore.io/api/experimental/package/${matchingPackage?.namespace ?? owner}/${matchingPackage?.name ?? packageName}`);
             }
 
