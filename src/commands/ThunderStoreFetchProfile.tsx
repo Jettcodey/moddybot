@@ -117,8 +117,8 @@ export default {
                 embeds: [
                     buildEmbed(
                         <Embed color={0x5865F2} title={`Profile ${profileData.profileName}`}>
-                            <Field name={"Total Mods"} value={profileData.mods.length.toString()}/>
-                            <Field name={"Enabled Mods"} value={enabledMods.length.toString()}/>
+                            <Field inline={true} name={"Total Mods"} value={profileData.mods.length.toString()}/>
+                            <Field inline={true} name={"Enabled Mods"} value={enabledMods.length.toString()}/>
                             <Footer text={`Profile Code: ${profileCode}`}/>
                         </Embed>
                     )
