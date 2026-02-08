@@ -13,8 +13,8 @@ const makeURL = (url: string) => `${URL}${url}`
 
 const pages = {
     // global
-    overview: '/repolib/overview.html',
-    develop: '/repolib/develop.html',
+    overview: '/overview.html',
+    develop: '/develop.html',
     // api
     api_get_started: '/repolib/api/start.html',
     api_bundle_loading: '/repolib/api/bundles.html',
