@@ -217,7 +217,7 @@ export default {
                         >
                             <Author
                                 name={`By ${packageData.namespace}`}
-                                iconURL={packageData.icon}
+                                iconURL={packageData.icon_url}
                                 url={`https://thunderstore.io/c/repo/p/${packageData.namespace}/${packageData.name}/`}
                             />
                             <Field name="Downloads" value={formatNumber(packageData.download_count)} inline={true}/>
