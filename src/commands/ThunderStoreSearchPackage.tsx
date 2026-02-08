@@ -228,15 +228,20 @@ export default {
                 pkg.name.toLowerCase().includes(packageName.toLowerCase())
             );
 
-            if (!matchingPackage) {
+            /*if (!matchingPackage) {
                 await interaction.editReply({
                     content: `No package matching "${packageName}" found for namespace: \`${owner}\``
                 });
                 return;
-            }
+            }*/
 
-            const url = `https://thunderstore.io/api/cyberstorm/listing/repo/${matchingPackage.namespace}/${matchingPackage.name}`;
-            const packageData = await thunderstoreFetch<ThunderstorePackage>(url);
+            const url = `https://thunderstore.io/api/cyberstorm/listing/repo/${matchingPackage?.namespace ?? owner}/${matchingPackage?.name ?? packageName}`;
+            let packageData = await thunderstoreFetch<ThunderstorePackage>(url);
+
+            if (!packageData)
+            {
+                packageData = await thunderstoreFetch<ThunderstorePackage>(`https://thunderstore.io/api/experimental/package/${matchingPackage?.namespace ?? owner}/${matchingPackage?.name ?? packageName}`);
+            }
 
             const categories = packageData.categories.map(x=>x.name).join(', ') || 'None';
             const dependencies = packageData.dependencies.map(x=>x.name).join(', ') || 'None';
