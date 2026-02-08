@@ -35,6 +35,13 @@ const ACTIONS = [{
                 "## Example:\n" +
                 "\"I updated and now crash any mod do that?\". We literally don't know. It is impossible for us to know.",
         }
+    },
+    {
+        name: "mods",
+        value: "bruh",
+        message: {
+            content: "Do mods work in multiplayer?: Yes. \nCan I play mods with other people?: Yes."
+        }
     }
 ]
 
