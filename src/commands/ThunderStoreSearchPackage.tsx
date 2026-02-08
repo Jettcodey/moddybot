@@ -4,7 +4,7 @@ import {
     type Client,
     SlashCommandBuilder
 } from "discord.js";
-import type { Command } from "@/types";
+import type {Command} from "@/types";
 import {Author, buildEmbed, Embed, Field, h, makeUrl, Fragment, Footer} from "@/helpers";
 import {check} from "@/commands/defaults";
 
@@ -78,7 +78,7 @@ type Category = {
 
 function formatDate(dateString: string): string {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    return date.toLocaleDateString('en-US', {year: 'numeric', month: 'short', day: 'numeric'});
 }
 
 function formatNumber(num: number): string {
@@ -147,7 +147,7 @@ export default {
         let shouldFuzz = interaction.options.getBoolean("fuzz", false);
 
         if (owner.startsWith("https://thunderstore.io")) {
-            const urlSplit = owner.split('/').filter(x=>x)
+            const urlSplit = owner.split('/').filter(x => x)
             owner = urlSplit[urlSplit.length - 2]
             packageName = urlSplit[urlSplit.length - 1]
         }
@@ -160,11 +160,11 @@ export default {
             );
 
             if (data.results.length === 0) {
-                await interaction.editReply({ content: `No packages found for: \`${owner}\`` });
+                await interaction.editReply({content: `No packages found for: \`${owner}\``});
                 return;
             }
 
-            if (!packageName || !shouldFuzz) {
+            if (!packageName || shouldFuzz) {
                 const embed = buildEmbed(
                     <Embed
                         title={`Packages by ${owner}`}
@@ -179,11 +179,12 @@ export default {
                             />
                         ))}
                         {data.results.length > 25 && (
-                            <Footer text={`Showing 25 of ${data.results.length} results • Visit Thunderstore for more`} />
+                            <Footer
+                                text={`Showing 25 of ${data.results.length} results • Visit Thunderstore for more`}/>
                         )}
                     </Embed>
                 );
-                return await interaction.editReply({ embeds: [embed] });
+                return await interaction.editReply({embeds: [embed]});
             }
 
             const matchingPackage = data.results.find(pkg =>
@@ -219,12 +220,12 @@ export default {
                                 iconURL={packageData.latest.icon}
                                 url={`https://thunderstore.io/c/repo/p/${packageData.namespace}/${packageData.name}/`}
                             />
-                            <Field name="Version" value={packageData.latest.version_number} inline={true} />
-                            <Field name="Downloads" value={formatNumber(packageData.latest.downloads)} inline={true} />
-                            <Field name="Dependencies" value={dependencies.toString()} inline={true} />
-                            <Field name="Categories" value={categories} inline={false} />
-                            <Field name="Last Updated" value={formatDate(packageData.date_updated)} inline={true} />
-                            <Field name="Created" value={formatDate(packageData.date_created)} inline={true} />
+                            <Field name="Version" value={packageData.latest.version_number} inline={true}/>
+                            <Field name="Downloads" value={formatNumber(packageData.latest.downloads)} inline={true}/>
+                            <Field name="Dependencies" value={dependencies.toString()} inline={true}/>
+                            <Field name="Categories" value={categories} inline={false}/>
+                            <Field name="Last Updated" value={formatDate(packageData.date_updated)} inline={true}/>
+                            <Field name="Created" value={formatDate(packageData.date_created)} inline={true}/>
                             {packageData.latest.website_url && (
                                 <Field
                                     name="Links"
@@ -232,7 +233,7 @@ export default {
                                     inline={false}
                                 />
                             )}
-                            {isDeprecated && <Field name="Status" value={isDeprecated} inline={false} />}
+                            {isDeprecated && <Field name="Status" value={isDeprecated} inline={false}/>}
                         </Embed>
                     )
                 ]
