@@ -19,8 +19,6 @@ export default {
     permissionCheck: check,
 
     async execute(client: Client, interaction: ChatInputCommandInteraction) {
-        if (!interaction.isChatInputCommand()) return;
-
         const guild = interaction.guild;
         if (!guild) return;
 
