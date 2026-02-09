@@ -2,5 +2,11 @@
   "links": [
     "https://robloxxxxxx.com",
     "https://roblox.com"
-  ]
+  ],
+  "status": {
+    "actions": ["Watching over", "Smirking at", "Looking at", "Playing REPO with", "Standing under the mistletoe with"],
+    "suffixes": [">:3", ":D", "", ":0", "👋"],
+    "users": ["704757796599496714", "1013664287169974332", "715791748273668126", "518035931081474075", "200308258890579968", "1457406039036264591"],
+    "interval": 300
+  }
 }

@@ -3,8 +3,16 @@ import fs from "node:fs";
 
 const configPath = path.join(import.meta.dirname, "../config.json");
 
+interface StatusConfig {
+  actions: string[];
+  suffixes: string[];
+  users: string[];
+  interval: number;
+}
+
 interface Config {
   links: string[];
+  status: StatusConfig;
   [key: string]: unknown;
 }
 

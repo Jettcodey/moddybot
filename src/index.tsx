@@ -5,12 +5,10 @@ import {
     Client,
     GatewayIntentBits,
     ChannelType,
-    type GuildMember,
     type Interaction,
     type Snowflake,
-    type TextChannel,
     type ThreadChannel,
-    type ForumChannel, REST, Routes, Activity,
+    type ForumChannel,
 } from "discord.js";
 import {Commands} from "@/commands/index.ts";
 import {Author, buildEmbed, Embed, Field, Footer, h, Fragment, deployCommands} from "@/helpers/index.tsx";
@@ -29,31 +27,14 @@ const client = new Client({
 const commands = new Commands();
 const eventsManager = new Events();
 
-const actions = ["Watching over", "Smirking at", "Looking at", "Playing REPO with","Standing under the mistletoe with"]
-const suffix = [">:3", ":D", "", ":0", "👋"]
-
-async function getRandomActivity() {
-    const users = ['704757796599496714','1013664287169974332','715791748273668126','518035931081474075','200308258890579968','1457406039036264591']
-    const randomChoice = (arr) => arr[Math.floor(Math.random() * arr.length)];
-    const randomUser = await client.users.fetch(randomChoice(users));
-    return {
-        name: `${randomChoice(actions)} ${randomUser?.globalName || randomUser.username} ${randomChoice(suffix)}`,
-    }
-}
+await eventsManager.loadEvents();
+eventsManager.getEvents().forEach(event => {
+    client.on(event.name, event.execute)
+})
 
 client.on('clientReady', async () => {
     LogAPI.log('Ready!');
     await deployCommands(commands);
-    await eventsManager.loadEvents();
-
-    client && client.user!.setPresence({
-        status: "online",
-        activities: [await getRandomActivity()]
-    })
-
-    eventsManager.getEvents().forEach(event => {
-        client.on(event.name, event.execute)
-    })
 });
 
 client.on("threadCreate", async (thread: ThreadChannel, newlyCreated: boolean) => {

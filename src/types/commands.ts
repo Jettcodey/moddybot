@@ -3,12 +3,14 @@ import type {
   ChatInputCommandInteraction,
   AutocompleteInteraction,
   SlashCommandBuilder,
-  SlashCommandOptionsOnlyBuilder, Interaction, Message, Embed, ContextMenuCommandBuilder,
+  SlashCommandOptionsOnlyBuilder,
+  SlashCommandSubcommandsOnlyBuilder,
+  ContextMenuCommandBuilder,
   UserContextMenuCommandInteraction, MessageContextMenuCommandInteraction,
 } from "discord.js";
 
 export interface Command {
-  data: SlashCommandBuilder | SlashCommandOptionsOnlyBuilder | ContextMenuCommandBuilder;
+  data: SlashCommandBuilder | SlashCommandOptionsOnlyBuilder | SlashCommandSubcommandsOnlyBuilder | ContextMenuCommandBuilder;
   execute(
       client: Client,
       interaction: ChatInputCommandInteraction | UserContextMenuCommandInteraction | MessageContextMenuCommandInteraction
