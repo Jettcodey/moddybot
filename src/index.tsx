@@ -29,11 +29,11 @@ const client = new Client({
 const commands = new Commands();
 const eventsManager = new Events();
 
-const actions = ["Watching over", "Smirking at", "Looking at", "Playing with"]
+const actions = ["Watching over", "Smirking at", "Looking at", "Playing REPO with","Standing under the mistletoe with"]
 const suffix = [">:3", ":D", "", ":0", "👋"]
 
 async function getRandomActivity() {
-    const users = ['704757796599496714','715791748273668126','518035931081474075','200308258890579968','1457406039036264591']
+    const users = ['704757796599496714','1013664287169974332','715791748273668126','518035931081474075','200308258890579968','1457406039036264591']
     const randomChoice = (arr) => arr[Math.floor(Math.random() * arr.length)];
     const randomUser = await client.users.fetch(randomChoice(users));
     return {
