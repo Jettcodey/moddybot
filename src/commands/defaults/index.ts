@@ -1,7 +1,8 @@
 import type {ChatInputCommandInteraction, Client, GuildMember, Snowflake} from "discord.js";
 
 export async function check(client: Client, interaction: ChatInputCommandInteraction) {
-    const requiredRole = await guild.roles.fetch(process.env.MINIMUM_ROLE_REQUIRED as Snowflake);
+    const guild = interaction.guild;
+    const requiredRole = await guild!.roles.fetch(process.env.MINIMUM_ROLE_REQUIRED as Snowflake);
     const member = interaction.member as GuildMember;
 
     if (!requiredRole) {
