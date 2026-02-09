@@ -10,6 +10,7 @@ import {
     TextInputBuilder,
     TextInputStyle,
     ComponentType,
+    EmbedBuilder,
 } from "discord.js";
 import {check} from "@/commands/defaults";
 import {startRandom, stopRandom} from "@/utils/status.ts";
@@ -23,7 +24,7 @@ const activityTypes = {
     custom: ActivityType.Custom,
 }
 
-function buildPanel(client: Client) {
+async function buildPanel(client: Client) {
     const {actions, suffixes, users, interval} = getConfig().status
     const activity = client.user?.presence?.activities?.[0]
 
@@ -33,15 +34,21 @@ function buildPanel(client: Client) {
         else current = `${ActivityType[activity.type]} ${activity.name}`
     }
 
-    const content = [
-        "**Status Config**",
-        `Current: ${current}`,
-        `Interval: ${interval}s`,
-        "",
-        `**Actions:** ${actions.join(", ") || "none"}`,
-        `**Suffixes:** ${suffixes.map(s => s || "(empty)").join(", ") || "none"}`,
-        `**Users:** ${users.length} user(s)`,
-    ].join("\n")
+    const userNames = await Promise.all(users.map(async id => {
+        const u = await client.users.fetch(id).catch(() => null)
+        return u ? `${u.globalName || u.username}` : id
+    }))
+
+    const embed = new EmbedBuilder()
+        .setTitle("Status Config")
+        .setColor(0x5865F2)
+        .addFields(
+            {name: "Current", value: current, inline: true},
+            {name: "Interval", value: `${interval}s`, inline: true},
+            {name: "Actions", value: actions.join(", ") || "none"},
+            {name: "Suffixes", value: suffixes.map(s => s || "(empty)").join(", ") || "none"},
+            {name: "Users", value: userNames.join(", ") || "none"},
+        )
 
     const row1 = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder().setCustomId("status_set").setLabel("Set Status").setStyle(ButtonStyle.Primary),
@@ -54,7 +61,7 @@ function buildPanel(client: Client) {
         new ButtonBuilder().setCustomId("status_remove").setLabel("Remove from Pool").setStyle(ButtonStyle.Secondary),
     )
 
-    return {content, components: [row1, row2]}
+    return {embeds: [embed], components: [row1, row2]}
 }
 
 export default {
@@ -65,7 +72,7 @@ export default {
     permissionCheck: check,
 
     async execute(client: Client, interaction: ChatInputCommandInteraction) {
-        const msg = await interaction.reply({...buildPanel(client), fetchReply: true})
+        const msg = await interaction.reply({...await buildPanel(client), fetchReply: true})
 
         const collector = msg.createMessageComponentCollector({
             componentType: ComponentType.Button,
@@ -114,7 +121,7 @@ export default {
                     }
 
                     await submit.deferUpdate()
-                    await msg.edit(buildPanel(client))
+                    await msg.edit(await buildPanel(client))
                 } catch (e) {}
             }
 
@@ -145,7 +152,7 @@ export default {
 
                     await startRandom(client, interval)
                     await submit.deferUpdate()
-                    await msg.edit(buildPanel(client))
+                    await msg.edit(await buildPanel(client))
                 } catch (e) {}
             }
 
@@ -153,7 +160,7 @@ export default {
                 stopRandom()
                 client.user?.setPresence({status: "online", activities: []})
                 await btn.deferUpdate()
-                await msg.edit(buildPanel(client))
+                await msg.edit(await buildPanel(client))
             }
 
             if (btn.customId == "status_add") {
@@ -198,7 +205,7 @@ export default {
 
                     setConfig("status", {...config.status, [category]: [...list, value]})
                     await submit.deferUpdate()
-                    await msg.edit(buildPanel(client))
+                    await msg.edit(await buildPanel(client))
                 } catch (e) {}
             }
 
@@ -244,13 +251,13 @@ export default {
 
                     setConfig("status", {...config.status, [category]: list.filter(v => v !== value)})
                     await submit.deferUpdate()
-                    await msg.edit(buildPanel(client))
+                    await msg.edit(await buildPanel(client))
                 } catch (e) {}
             }
         })
 
         collector.on('end', async () => {
-            const panel = buildPanel(client)
+            const panel = await buildPanel(client)
             panel.components.forEach(row => row.components.forEach(b => b.setDisabled(true)))
             await msg.edit(panel).catch(() => {})
         })
