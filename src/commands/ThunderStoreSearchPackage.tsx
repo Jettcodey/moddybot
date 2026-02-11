@@ -321,7 +321,7 @@ export default {
 
         try {
             const data = await thunderstoreFetch<ThunderstoreListingResponse>(
-                `https://thunderstore.io/api/cyberstorm/listing/repo/?q=${encodeURIComponent(owner)}`
+                `https://thunderstore.io/api/cyberstorm/listing/repo/?q=${encodeURIComponent(owner)}&deprecated=true`
             );
 
             if (data.results.length === 0) {
@@ -378,6 +378,7 @@ export default {
             const categories = packageData.categories.map(x => x.name).join(', ') || 'None';
             const dependencies = packageData.dependencies.map(x => x.name).join(', ') || 'None';
             const isDeprecated = packageData.is_deprecated ? '**DEPRECATED**' : '';
+            const isOutdated = new Date(packageData.last_updated) < new Date(1762462815 * 1000);
 
             return await interaction.editReply({
                 embeds: [
@@ -385,7 +386,7 @@ export default {
                         <Embed
                             title={packageData.name}
                             url={`https://thunderstore.io/c/repo/p/${packageData.namespace}/${packageData.name}/`}
-                            description={packageData.description}
+                            description={isOutdated ? `${packageData.description} \n\n***THIS MOD WAS NOT UPDATED AFTER THE REPOLIB UPDATE. THIS MOD HAS A HIGH CHANCE OF NOT WORKING. PLEASE DISABLE AND REPORT IT TO THE DEVELOPER OR THUNDERSTORE STAFF.***"` : packageData.description}
                             color={packageData.is_deprecated ? 0xFF6B6B : 0x5865F2}
                             thumbnail={packageData.icon_url}
                         >
@@ -398,7 +399,7 @@ export default {
                             <Field name="Dependencies" value={dependencies.toString()} inline={true}/>
                             <Field name="Categories" value={categories} inline={false}/>
                             <Field name="Last Updated" value={formatDate(packageData.last_updated)} inline={true}/>
-                            <Field name="Outdated" value={String(new Date(packageData.last_updated) < new Date(1762462815 * 1000))} inline={true}/>
+                            <Field name="Outdated" value={String(isOutdated)} inline={true}/>
                             <Field name="Created" value={formatDate(packageData.datetime_created)} inline={true}/>
                             <Field name="Version" value={packageData.latest_version_number} inline={true}/>
                             {packageData.website_url && (
