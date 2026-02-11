@@ -78,7 +78,7 @@ export default {
         const hasBadLink = foundUrls.some(url =>
             badLinks.some(badLink => url.includes(badLink))
         );
-        if (!hasBadLink) return;
+        //if (!hasBadLink) return;
 
         const linkEmbed = buildEmbed(
             <Embed title={"Disallowed link"} description={foundUrls.join(", ")}>
