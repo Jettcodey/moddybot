@@ -399,7 +399,7 @@ export default {
                             <Field name="Dependencies" value={dependencies.toString()} inline={true}/>
                             <Field name="Categories" value={categories} inline={false}/>
                             <Field name="Last Updated" value={formatDate(packageData.last_updated)} inline={true}/>
-                            <Field name="Outdated" value={String(isOutdated)} inline={true}/>
+                            <Field name="Potentionally Outdated" value={String(isOutdated)} inline={true}/>
                             <Field name="Created" value={formatDate(packageData.datetime_created)} inline={true}/>
                             <Field name="Version" value={packageData.latest_version_number} inline={true}/>
                             {packageData.website_url && (
