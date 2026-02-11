@@ -78,7 +78,6 @@ export default {
         const hasBadLink = foundUrls.some(url =>
             badLinks.some(badLink => url.includes(badLink))
         );
-        //if (!hasBadLink) return;
 
         const linkEmbed = buildEmbed(
             <Embed title={"Disallowed link"} description={foundUrls.join(", ")}>
@@ -89,20 +88,26 @@ export default {
         const blobs = await Promise.all(foundUrls.map(async url => {
             const response = await fetch(url)
             const blob = await response.blob();
-            const file = detectFileType(blob)
             return {
                 url: url,
-                type: file,
+                type: blob.type,
             }
         }))
 
         const worker = await createWorker('eng');
+
         const hasCrypto = await Promise.all(blobs.map(async (x) => {
             if (!x.type.startsWith("image")) return;
 
             const text = await worker.recognize(x.url)
-            return text.data.text.includes('crypto') ||text.data.text.includes('elonmusk')
+            return {
+                found: text.data.text.includes('crypto') || text.data.text.includes('elonmusk'),
+                url: x.url
+            }
         }))
+
+        await worker.terminate()
+        const foundCryptoScams = hasCrypto.filter(x => x && x.found);
 
         try {
             const alertChannel = message.guild.channels.cache.get(process.env.ALERT_CHANNEL_ID) as TextChannel;
@@ -112,24 +117,24 @@ export default {
                     embeds: [linkEmbed],
                 });
             }
-            if (hasCrypto) {
+            if (foundCryptoScams) {
                 const orgFiles = await Promise.all(
-                    message.attachments.map(async x => {
+                    hasCrypto.map(async x => {
                         const response = await fetch(x.url);
                         const content = await response.arrayBuffer();
                         return new AttachmentBuilder(
                             Buffer.from(content),
-                            { name: x.name }
+                            { name: 'image.png' }
                         );
                     })
                 );
                 await alertChannel.send({
-                    content: "Crypto potential scam: ",
+                    content: "Message deleted for crypto.",
                     files: orgFiles
                 })
             }
         } catch (e) {
-            LogAPI.log(e);
+            console.log(e);
         }
     }
 } satisfies Event<"messageCreate">
