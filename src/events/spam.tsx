@@ -100,8 +100,12 @@ export default {
             if (!x.type.startsWith("image")) return;
 
             const text = await worker.recognize(x.url)
+            const lowerText = text.data.text.toLowerCase();
+
             return {
-                found: text.data.text.includes('crypto') || text.data.text.includes('elonmusk'),
+                found: ['crypto', 'elonmusk', 'bitcoin', 'raydium', 'ethereum','nft'].some(keyword =>
+                    lowerText.includes(keyword)
+                ),
                 url: x.url
             }
         }))
@@ -155,7 +159,7 @@ export default {
                         >
                             <Field
                                 name={"What happened?"}
-                                value={"An image or message from your account included the words \"crypto\" or \"elonmusk\", which are commonly associated with scams."}
+                                value={"An image or message from your account included words that are commonly associated with scams."}
                             />
                             <Field
                                 name={"If this was you"}
