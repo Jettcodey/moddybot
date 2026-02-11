@@ -149,7 +149,7 @@ export default {
                 await message.author.send({
                     embeds: [buildEmbed(
                         <Embed
-                            title={"⚠Security Alert from REPO Modding Discord"}
+                            title={"Security Alert from REPO Modding Discord"}
                             description={"Your account sent a message containing suspicious crypto-related content that was automatically removed."}
                             color={0xFFA500}
                         >
@@ -167,7 +167,7 @@ export default {
                             />
                             <Field
                                 name={"Evidence"}
-                                value={"The flagged content is attached below for your reference."}
+                                value={"The flagged content is attached above for your reference."}
                             />
                         </Embed>
                     )],
