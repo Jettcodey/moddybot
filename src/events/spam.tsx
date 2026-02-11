@@ -149,7 +149,7 @@ export default {
                 await message.author.send({
                     embeds: [buildEmbed(
                         <Embed
-                            title={"⚠️ Security Alert from REPO Modding Discord"}
+                            title={"⚠Security Alert from REPO Modding Discord"}
                             description={"Your account sent a message containing suspicious crypto-related content that was automatically removed."}
                             color={0xFFA500}
                         >
@@ -158,11 +158,11 @@ export default {
                                 value={"An image or message from your account included the words \"crypto\" or \"elonmusk\", which are commonly associated with scams."}
                             />
                             <Field
-                                name={"✅ If this was you"}
+                                name={"If this was you"}
                                 value={"You can safely ignore this message. Please be aware that crypto-related content may be flagged in the future."}
                             />
                             <Field
-                                name={"🚨 If this was NOT you"}
+                                name={"If this was NOT you"}
                                 value={"Your account may be compromised. Please:\n• Reset your password immediately\n• Enable Two-Factor Authentication (2FA)\n• Review and remove any suspicious authorized apps at [discord.com/settings/authorized-apps](https://discord.com/settings/authorized-apps)\n• Check for any unfamiliar activity"}
                             />
                             <Field
