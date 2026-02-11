@@ -146,6 +146,12 @@ export default {
                     files: orgFiles
                 })
                 await message.delete();
+                await message.author.send({
+                    content: "Hello, This is from the REPO Modding Discord Server. This message is to warn you that your account sent an image or file that included the words \"Crypto\" or \"elonmusk\". If this was an accident and this was you then you can safely ignore this message. " +
+                        "If this was ***NOT*** you then please reset your password, ideally enable 2FA and remove unknown applications from your account. The image below is what your account send." +
+                        "-# This message was automated by Moddy Auto Scam Detection Moderation.",
+                    files: orgFiles
+                })
             }
         } catch (e) {
             console.log(e);
