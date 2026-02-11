@@ -9,6 +9,7 @@ declare global {
       THREAD_CREATION_ALERT_ID: string;
       MINIMUM_ROLE_REQUIRED: string;
       ALERT_CHANNEL_ID: string;
+      VERIFIED_MODDER_ROLE_ID: string;
     }
   }
 }

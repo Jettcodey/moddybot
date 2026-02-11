@@ -11,7 +11,7 @@ import type {
 
 interface Comp {
   customId: string;
-  execute: (client: Client, interaction: Interaction, message: Promise<void> | Message<boolean>) => void;
+  execute: (client: Client, interaction: Interaction, message: Promise<void> | Message<boolean>) => Promise<void>;
 }
 
 export interface Command {

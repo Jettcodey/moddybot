@@ -24,7 +24,7 @@ export default {
         
         const embed = buildEmbed(
             <Embed title="Piracy Alert" description="A message containing a potential pirater was detected." color={0xFFA500}>  
-                <Author name={message.author.username} iconURL={message.author.avatarURL()} />
+                <Author name={message.author.username} iconURL={message.author.avatarURL() ?? undefined} />
                 <Field name="Message Content" value={message.content} />
                 <Field name="Jump Link" value={`[jump to message](${jumpLink})`} />
             </Embed>
