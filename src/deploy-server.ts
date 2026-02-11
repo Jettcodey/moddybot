@@ -19,6 +19,7 @@ interface GitHubWebhookPayload {
         name: string;
     };
     commits?: Array<{
+        id: string;
         message: string;
     }>;
 }
@@ -49,7 +50,7 @@ async function sendDiscordMessage(content: string, embed?: any) {
     }
 }
 
-async function executeDeploy(commitMessage?: string, pusher?: string) {
+async function executeDeploy(commitMessage?: string, pusher?: string, commitURL?: string) {
     LogAPI.log("starting deployment");
 
     const repoDir = "/home/cole/moddybot";
@@ -68,6 +69,11 @@ async function executeDeploy(commitMessage?: string, pusher?: string) {
                 {
                     name: "status",
                     value: "pulling changes",
+                    inline: true
+                },
+                {
+                    name: "commit",
+                    value: commitURL ? `[View Commit](${commitURL})` : "no commit URL",
                     inline: true
                 }
             ],
@@ -120,6 +126,11 @@ async function executeDeploy(commitMessage?: string, pusher?: string) {
                     {
                         name: "changes",
                         value: commitMessage || "latest updates deployed",
+                        inline: false
+                    },
+                    {
+                        name: "commit",
+                        value: commitURL ? `[View Commit](${commitURL})` : "no commit URL",
                         inline: false
                     }
                 ],
@@ -182,9 +193,11 @@ const server = Bun.serve({
             LogAPI.log(`ref: ${data.ref}`);
 
             const commitMessage = data.commits?.[0]?.message || "no commit message";
+            const repoName = data.repository?.full_name || "unknown repo";            
+            const commitURL = `https://github.com/${repoName}/commit/${data.commits?.[0]?.id}` || "";
             const pusher = data.pusher?.name || "unknown";
 
-            const success = await executeDeploy(commitMessage, pusher);
+            const success = await executeDeploy(commitMessage, pusher, commitURL);
 
             return new Response(
                 JSON.stringify({
