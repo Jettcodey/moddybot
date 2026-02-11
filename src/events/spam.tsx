@@ -147,9 +147,30 @@ export default {
                 })
                 await message.delete();
                 await message.author.send({
-                    content: "Hello, This is from the REPO Modding Discord Server. This message is to warn you that your account sent an image or file that included the words \"Crypto\" or \"elonmusk\". If this was an accident and this was you then you can safely ignore this message. " +
-                        "If this was ***NOT*** you then please reset your password, ideally enable 2FA and remove unknown applications from your account. The image below is what your account send." +
-                        "-# This message was automated by Moddy Auto Scam Detection Moderation.",
+                    embeds: [buildEmbed(
+                        <Embed
+                            title={"⚠️ Security Alert from REPO Modding Discord"}
+                            description={"Your account sent a message containing suspicious crypto-related content that was automatically removed."}
+                            color={0xFFA500}
+                        >
+                            <Field
+                                name={"What happened?"}
+                                value={"An image or message from your account included the words \"crypto\" or \"elonmusk\", which are commonly associated with scams."}
+                            />
+                            <Field
+                                name={"✅ If this was you"}
+                                value={"You can safely ignore this message. Please be aware that crypto-related content may be flagged in the future."}
+                            />
+                            <Field
+                                name={"🚨 If this was NOT you"}
+                                value={"Your account may be compromised. Please:\n• Reset your password immediately\n• Enable Two-Factor Authentication (2FA)\n• Review and remove any suspicious authorized apps at [discord.com/settings/authorized-apps](https://discord.com/settings/authorized-apps)\n• Check for any unfamiliar activity"}
+                            />
+                            <Field
+                                name={"Evidence"}
+                                value={"The flagged content is attached below for your reference."}
+                            />
+                        </Embed>
+                    )],
                     files: orgFiles
                 })
             }
