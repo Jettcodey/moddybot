@@ -386,7 +386,7 @@ export default {
                         <Embed
                             title={packageData.name}
                             url={`https://thunderstore.io/c/repo/p/${packageData.namespace}/${packageData.name}/`}
-                            description={isOutdated ? `${packageData.description} \n\n***THIS MOD WAS NOT UPDATED AFTER THE REPOLIB UPDATE. THIS MOD HAS A HIGH CHANCE OF NOT WORKING. PLEASE DISABLE AND REPORT IT TO THE DEVELOPER OR THUNDERSTORE STAFF.***` : packageData.description}
+                            description={isOutdated && dependencies.includes("repolib") ? `${packageData.description} \n\n***THIS MOD WAS NOT UPDATED AFTER THE REPOLIB UPDATE. THIS MOD HAS A HIGH CHANCE OF NOT WORKING. PLEASE DISABLE AND REPORT IT TO THE DEVELOPER.***` : packageData.description}
                             color={packageData.is_deprecated ? 0xFF6B6B : 0x5865F2}
                             thumbnail={packageData.icon_url}
                         >
