@@ -106,7 +106,7 @@ export default {
 
         try {
             const alertChannel = message.guild.channels.cache.get(process.env.ALERT_CHANNEL_ID) as TextChannel;
-            if (alertChannel) {
+            if (alertChannel && hasBadLink) {
                 await message.delete();
                 await alertChannel.send({
                     embeds: [linkEmbed],
