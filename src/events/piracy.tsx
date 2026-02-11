@@ -5,7 +5,7 @@ import {type Message, type TextChannel} from "discord.js";
 import {buildEmbed, Field, Fragment, h, Embed, Author} from "@/helpers/index.tsx";
 import type {Event} from "@/types/index.ts";
 
-const piracykw = ["steamunlocked", "steamrip", "cracked", "pirated", "rutracker"];
+const piracykw = ["steamunlocked", "steamrip", "cracked", "pirated", "rutracker", "craked", "piracy", "pirate", "skidrow", "fitgirl", "gogunlocked"];
 
 export default {
     name: "messageCreate",

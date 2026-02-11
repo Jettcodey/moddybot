@@ -71,18 +71,22 @@ client.on('clientReady', async () => {
 
 client.on("threadCreate", async (thread: ThreadChannel, newlyCreated: boolean) => {
     if (thread.parent?.id == process.env.CREATE_THREAD_ID) {
+        const member = await thread.guild.members.fetch(thread.ownerId);
+        const hasRole = member.roles.cache.has(process.env.VERIFIED_MODDER_ROLE_ID);
         const forumChannel = await client.channels.fetch(process.env.THREAD_CREATION_ALERT_ID as Snowflake) as ForumChannel;
+
 
         if (forumChannel?.type === ChannelType.GuildForum) {
             const alertEmbed = buildEmbed(
                 <Embed
                     title="New Mod Released"
-                    description={`A new mod has been posted. Please determine if the publisher has the role or not. Use /modder <user> to give the user the verified role.`}
+                    description={`A new mod has been posted. If the user does not have the verified role, use /modder <user> to give the user the verified role.`}
                     color={0x5865F2}
                 >
                     <Field name="Thread Name" value={thread.name} inline={true}/>
                     <Field name="Link" value={`<#${thread.id}>`} inline={true}/>
                     <Field name="Created By" value={`<@${thread.ownerId}>`} inline={true}/>
+                    <Field name="Has Verified Role?" value={hasRole ? "Yes" : "No"} inline={true}/>
                 </Embed>
             );
 
