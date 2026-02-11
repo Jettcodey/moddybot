@@ -1,7 +1,8 @@
 import {
-    type AutocompleteInteraction,
+    ActionRowBuilder,
+    type AutocompleteInteraction, ButtonBuilder, ButtonStyle,
     type ChatInputCommandInteraction,
-    type Client,
+    type Client, type Message,
     SlashCommandBuilder
 } from "discord.js";
 import type {Command} from "@/types";
@@ -122,7 +123,6 @@ function formatNumber(num: number): string {
     return num.toLocaleString('en-US');
 }
 
-// 753 can probably tell that im running this outside the browser. so lets spoof it.
 async function thunderstoreFetch<T>(url: string): Promise<T> {
     const userAgents = [
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -161,6 +161,23 @@ async function thunderstoreFetch<T>(url: string): Promise<T> {
     return await response.json() as T;
 }
 
+const userStates = new Map<string, { nextURL: string | null, prevURL: string | null, query: string }>();
+
+function getRow(hasNext: boolean, hasPrev: boolean) {
+    return new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+            .setCustomId("search_prev_page")
+            .setLabel("Previous")
+            .setStyle(ButtonStyle.Secondary)
+            .setDisabled(!hasPrev),
+        new ButtonBuilder()
+            .setCustomId("search_next_page")
+            .setLabel("Next")
+            .setStyle(ButtonStyle.Secondary)
+            .setDisabled(!hasNext)
+    );
+}
+
 export default {
     data: new SlashCommandBuilder()
         .setName("search")
@@ -177,6 +194,117 @@ export default {
         ).addBooleanOption(op => op.setName("fuzz").setDescription("fuzz searching").setRequired(false)),
 
     permissionCheck: () => ({result: true}),
+
+    components: {
+        nextPage: {
+            customId: "search_next_page",
+            async execute(client: Client, interaction: any, message: Message) {
+                const userId = interaction.user.id;
+                const state = userStates.get(userId);
+
+                if (!state || !state.nextURL) {
+                    await interaction.reply({ content: 'No next page available.', ephemeral: true });
+                    return;
+                }
+
+                await interaction.deferUpdate();
+
+                try {
+                    const data = await thunderstoreFetch<ThunderstoreListingResponse>(state.nextURL);
+
+                    if (data.results.length === 0) {
+                        await interaction.editReply({ content: `No packages to be found.` });
+                        return;
+                    }
+
+                    state.nextURL = data.next;
+                    state.prevURL = data.previous;
+
+                    const embed = buildEmbed(
+                        <Embed
+                            title={`Packages - ${state.query}`}
+                            description={`Found ${data.count} total package${data.count !== 1 ? 's' : ''}`}
+                            color={0x5865F2}
+                        >
+                            {data.results.slice(0, 25).map((x, index) => (
+                                <Field
+                                    name={`${x.name} - ${x.namespace}`}
+                                    value={`${formatNumber(x.download_count)} Downloads • ${x.rating_count} Ratings\n[View on Thunderstore](https://thunderstore.io/c/repo/p/${x.namespace}/${x.name}/)`}
+                                    inline={(index % 2 !== 2)}
+                                />
+                            ))}
+                            {data.count > 25 && (
+                                <Footer text={`Showing 25 per page • Visit Thunderstore for more`} />
+                            )}
+                        </Embed>
+                    );
+
+                    await interaction.editReply({
+                        embeds: [embed],
+                        components: [getRow(!!data.next, !!data.previous)]
+                    });
+                } catch (error) {
+                    await interaction.editReply({
+                        content: `Failed to fetch page: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                    });
+                }
+            }
+        },
+        prevPage: {
+            customId: "search_prev_page",
+            async execute(client: Client, interaction: any, message: Message) {
+                const userId = interaction.user.id;
+                const state = userStates.get(userId);
+
+                if (!state || !state.prevURL) {
+                    await interaction.reply({ content: 'No previous page available.', ephemeral: true });
+                    return;
+                }
+
+                await interaction.deferUpdate();
+
+                try {
+                    const data = await thunderstoreFetch<ThunderstoreListingResponse>(state.prevURL);
+
+                    if (data.results.length === 0) {
+                        await interaction.editReply({ content: `No packages to be found.` });
+                        return;
+                    }
+
+                    state.nextURL = data.next;
+                    state.prevURL = data.previous;
+
+                    const embed = buildEmbed(
+                        <Embed
+                            title={`Packages - ${state.query}`}
+                            description={`Found ${data.count} total package${data.count !== 1 ? 's' : ''}`}
+                            color={0x5865F2}
+                        >
+                            {data.results.slice(0, 25).map((x, index) => (
+                                <Field
+                                    name={`${x.name} - ${x.namespace}`}
+                                    value={`${formatNumber(x.download_count)} Downloads • ${x.rating_count} Ratings\n[View on Thunderstore](https://thunderstore.io/c/repo/p/${x.namespace}/${x.name}/)`}
+                                    inline={(index % 2 !== 2)}
+                                />
+                            ))}
+                            {data.count > 25 && (
+                                <Footer text={`Showing 25 per page • Visit Thunderstore for more`} />
+                            )}
+                        </Embed>
+                    );
+
+                    await interaction.editReply({
+                        embeds: [embed],
+                        components: [getRow(!!data.next, !!data.previous)]
+                    });
+                } catch (error) {
+                    await interaction.editReply({
+                        content: `Failed to fetch page: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                    });
+                }
+            }
+        }
+    },
 
     async execute(client: Client, interaction: ChatInputCommandInteraction) {
         let owner = interaction.options.getString("namespace", true);
@@ -202,10 +330,16 @@ export default {
             }
 
             if (!packageName || shouldFuzz) {
+                userStates.set(interaction.user.id, {
+                    nextURL: data.next,
+                    prevURL: data.previous,
+                    query: owner
+                });
+
                 const embed = buildEmbed(
                     <Embed
                         title={`Packages by ${owner}`}
-                        description={`Found ${data.results.length} package${data.results.length !== 1 ? 's' : ''}`}
+                        description={`Found ${data.count} total package${data.count !== 1 ? 's' : ''}`}
                         color={0x5865F2}
                     >
                         {data.results.slice(0, 25).map((x, index) => (
@@ -215,31 +349,25 @@ export default {
                                 inline={(index % 2 !== 2)}
                             />
                         ))}
-                        {data.results.length > 25 && (
-                            <Footer
-                                text={`Showing 25 of ${data.results.length} results • Visit Thunderstore for more`}/>
+                        {data.count > 25 && (
+                            <Footer text={`Showing 25 per page • Visit Thunderstore for more`} />
                         )}
                     </Embed>
                 );
-                return await interaction.editReply({embeds: [embed]});
+                return await interaction.editReply({
+                    embeds: [embed],
+                    components: [getRow(!!data.next, !!data.previous)]
+                });
             }
 
             const matchingPackage = data.results.find(pkg =>
                 pkg.name.toLowerCase().includes(packageName.toLowerCase())
             );
 
-            /*if (!matchingPackage) {
-                await interaction.editReply({
-                    content: `No package matching "${packageName}" found for namespace: \`${owner}\``
-                });
-                return;
-            }*/
-
             const url = `https://thunderstore.io/api/cyberstorm/listing/repo/${matchingPackage?.namespace ?? owner}/${matchingPackage?.name ?? packageName}`;
             let packageData = await thunderstoreFetch<ThunderstorePackage>(url);
 
-            if (!packageData)
-            {
+            if (!packageData) {
                 await interaction.editReply({
                     content: "Cyberstorm API failed to retrieve information, Probably old package. Trying legacy"
                 })
@@ -247,11 +375,11 @@ export default {
                 packageData = await thunderstoreFetch<ThunderstorePackage>(`https://thunderstore.io/api/experimental/package/${matchingPackage?.namespace ?? owner}/${matchingPackage?.name ?? packageName}`);
             }
 
-            const categories = packageData.categories.map(x=>x.name).join(', ') || 'None';
-            const dependencies = packageData.dependencies.map(x=>x.name).join(', ') || 'None';
+            const categories = packageData.categories.map(x => x.name).join(', ') || 'None';
+            const dependencies = packageData.dependencies.map(x => x.name).join(', ') || 'None';
             const isDeprecated = packageData.is_deprecated ? '**DEPRECATED**' : '';
 
-            await interaction.editReply({
+            return await interaction.editReply({
                 embeds: [
                     buildEmbed(
                         <Embed

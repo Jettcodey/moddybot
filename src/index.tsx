@@ -9,11 +9,35 @@ import {
     type Snowflake,
     type ThreadChannel,
     type ForumChannel,
+    ComponentType,
 } from "discord.js";
 import {Commands} from "@/commands/index.ts";
 import {Author, buildEmbed, Embed, Field, Footer, h, Fragment, deployCommands} from "@/helpers/index.tsx";
 import Events from "@/events/index.ts";
 import {LogAPI} from "@/utils/logger.ts";
+
+class ComponentCollector {
+    private handlers = new Map<string, ComponentHandler>();
+
+    register(handler: ComponentHandler) {
+        this.handlers.set(handler.customId, handler);
+    }
+
+    getHandler(customId: string) {
+        return this.handlers.get(customId);
+    }
+
+    clear() {
+        this.handlers.clear();
+    }
+}
+
+interface ComponentHandler {
+    customId: string;
+    execute: (client: Client, interaction: any, message: any) => Promise<void>;
+}
+
+const componentCollector = new ComponentCollector();
 
 const client = new Client({
     intents: [
@@ -35,6 +59,14 @@ eventsManager.getEvents().forEach(event => {
 client.on('clientReady', async () => {
     LogAPI.log('Ready!');
     await deployCommands(commands);
+
+    commands.getAllCommands().forEach(command => {
+        if (command.components) {
+            Object.values(command.components).forEach(comp => {
+                componentCollector.register(comp);
+            });
+        }
+    });
 });
 
 client.on("threadCreate", async (thread: ThreadChannel, newlyCreated: boolean) => {
@@ -73,21 +105,30 @@ client.on("interactionCreate", async (interaction: Interaction) => {
         return;
     }
 
+    if (interaction.isMessageComponent()) {
+        const handler = componentCollector.getHandler(interaction.customId);
+        if (handler) {
+            await handler.execute(client, interaction, interaction.message);
+        }
+        return;
+    }
+
     if (interaction.isChatInputCommand() || interaction.isContextMenuCommand()) {
         const command = commands.getCommand(interaction.commandName);
-        if (command) {
-            if (command.permissionCheck) {
-                const hasPermission = await command.permissionCheck(client, interaction);
-                if (!hasPermission.result) {
-                    return await interaction.reply({
-                        content: hasPermission.message,
-                        embeds: hasPermission.embeds,
-                        ephemeral: hasPermission.hide || false
-                    });
-                }
+        if (!command) return;
+
+        if (command.permissionCheck) {
+            const hasPermission = await command.permissionCheck(client, interaction);
+            if (!hasPermission.result) {
+                return await interaction.reply({
+                    content: hasPermission.message,
+                    embeds: hasPermission.embeds,
+                    ephemeral: hasPermission.hide || false
+                });
             }
-            await command.execute(client, interaction);
         }
+
+        await command.execute(client, interaction);
     }
 });
 
@@ -100,4 +141,4 @@ client.on("interactionCreate", async (interaction: Interaction) => {
 //     }
 // });
 
-await client.login(process.env.TOKEN)
+await client.login(process.env.TOKEN);
