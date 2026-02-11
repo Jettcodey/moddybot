@@ -4,3 +4,4 @@ test
 # Testing auto-deploy
 Hi, i am a test line to test out the commit messgae!
 me too!
+me three!
