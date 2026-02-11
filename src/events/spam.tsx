@@ -2,7 +2,7 @@
 /** @jsxFrag Fragment */
 
 import {AttachmentBuilder, type Message, type Snowflake, type TextChannel} from "discord.js";
-import {buildEmbed, Field, Fragment, h, Embed} from "@/helpers/index.tsx";
+import {buildEmbed, Field, Fragment, h, Embed, Author} from "@/helpers/index.tsx";
 import {getConfig} from "@/utils/config.ts";
 import type {Event} from "@/types/index.ts";
 import {LogAPI} from "@/utils/logger.ts";
@@ -117,21 +117,35 @@ export default {
                     embeds: [linkEmbed],
                 });
             }
-            if (foundCryptoScams) {
+            if (foundCryptoScams.length > 0) {
+                const cryptoEmbed = buildEmbed(
+                    <Embed
+                        title={"Potential Crypto Scam Detected"}
+                        description={"A message containing suspicious crypto-related content was automatically deleted."}
+                        color={0xFF0000}
+                    >
+                        <Author name={message.author.username} iconURL={message.author.avatarURL()}/>
+                        <Field name={"User"} value={`<@${message.author.id}>`} inline={true}/>
+                        <Field name={"Channel"} value={`<#${message.channel.id}>`} inline={true}/>
+                        <Field name={"Suspicious URLs"} value={foundCryptoScams.map(x => x.url).join("\n")}/>
+                    </Embed>
+                );
+
                 const orgFiles = await Promise.all(
-                    hasCrypto.map(async x => {
+                    foundCryptoScams.map(async x => {
                         const response = await fetch(x.url);
                         const content = await response.arrayBuffer();
                         return new AttachmentBuilder(
                             Buffer.from(content),
-                            { name: 'image.png' }
+                            {name: 'scam-evidence.png'}
                         );
                     })
                 );
                 await alertChannel.send({
-                    content: "Message deleted for crypto.",
+                    embeds: [cryptoEmbed],
                     files: orgFiles
                 })
+                await message.delete();
             }
         } catch (e) {
             console.log(e);
