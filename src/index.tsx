@@ -9,7 +9,7 @@ import {
     type Snowflake,
     type ThreadChannel,
     type ForumChannel,
-    ComponentType, ApplicationIntegrationType, InteractionContextType,
+    ComponentType,
 } from "discord.js";
 import {Commands} from "@/commands/index.ts";
 import {Author, buildEmbed, Embed, Field, Footer, h, Fragment, deployCommands} from "@/helpers/index.tsx";
@@ -58,24 +58,10 @@ eventsManager.getEvents().forEach(event => {
 
 client.on('clientReady', async () => {
     LogAPI.log('Ready!');
-    const server = client.guilds.cache.get(process.env.GUILD_ID)
-    await commands.loadCommands();
-
-    const commandsData = commands.getAllCommands().map(cmd => ({
-        ...cmd.data.toJSON(),
-        integration_types: [
-            ApplicationIntegrationType.GuildInstall,  // Works in servers
-            ApplicationIntegrationType.UserInstall    // Works in DMs/user context
-        ],
-        contexts: [
-            InteractionContextType.Guild,             // Can be used in servers
-            InteractionContextType.BotDM,             // Can be used in bot DMs
-            InteractionContextType.PrivateChannel     // Can be used in DMs/GDMs
-        ]
-    }));
-    server!.commands.set(commandsData)
+    //const server = client.guilds.cache.get('1344557689979670578')
+    //server!.commands.set([])
     //client.application.commands.set([]);
-    //await deployCommands(commands);
+    await deployCommands(commands);
 
     commands.getAllCommands().forEach(command => {
         if (command.components) {
