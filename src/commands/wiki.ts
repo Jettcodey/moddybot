@@ -59,7 +59,7 @@ export default {
                     })
                     .join(' ');
 
-                return { name: formatted, value };
+                return { name: formatted, value: name };
             })
         );
     },
