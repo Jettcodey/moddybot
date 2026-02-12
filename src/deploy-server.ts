@@ -57,26 +57,27 @@ async function executeDeploy(commitMessage?: string, pusher?: string, commitURL?
 
     try {
         const embed = {
-            title: "moddybot restarting",
-            description: commitMessage || "deploying latest changes",
-            color: 0xffa500,
+            title: "\u{1F504} Deploying...",
+            description: `\`\`\`\n${commitMessage || "deploying latest changes"}\n\`\`\``,
+            color: 0xf59e0b,
             fields: [
                 {
-                    name: "pushed by",
+                    name: "\u{1F464} Pushed by",
                     value: pusher || "unknown",
                     inline: true
                 },
                 {
-                    name: "status",
-                    value: "pulling changes",
+                    name: "\u{1F4E6} Status",
+                    value: "Pulling changes...",
                     inline: true
                 },
-                {
-                    name: "commit",
-                    value: commitURL ? `[View Commit](${commitURL})` : "no commit URL",
-                    inline: true
-                }
+                ...(commitURL ? [{
+                    name: "\u{1F517} Commit",
+                    value: `[View on GitHub](${commitURL})`,
+                    inline: false
+                }] : [])
             ],
+            footer: { text: "moddybot deploy" },
             timestamp: new Date().toISOString()
         };
 
@@ -102,7 +103,12 @@ async function executeDeploy(commitMessage?: string, pusher?: string, commitURL?
 
         await bunInstall.exited;
 
-        await sendDiscordMessage("moddybot stopping");
+        await sendDiscordMessage("", {
+            description: "Stopping bot for update...",
+            color: 0x6366f1,
+            footer: { text: "moddybot deploy" },
+            timestamp: new Date().toISOString()
+        });
 
         LogAPI.log("restarting bot");
         const restart = Bun.spawn(["sudo", "systemctl", "restart", "moddybot"], {
@@ -119,21 +125,17 @@ async function executeDeploy(commitMessage?: string, pusher?: string, commitURL?
             LogAPI.log("deployment completed successfully");
 
             const successEmbed = {
-                title: "moddybot back online",
-                description: "deployment completed successfully",
-                color: 0x00ff00,
+                title: "\u2705 Back Online",
+                description: `\`\`\`\n${commitMessage || "latest updates deployed"}\n\`\`\``,
+                color: 0x22c55e,
                 fields: [
-                    {
-                        name: "changes",
-                        value: commitMessage || "latest updates deployed",
+                    ...(commitURL ? [{
+                        name: "\u{1F517} Commit",
+                        value: `[View on GitHub](${commitURL})`,
                         inline: false
-                    },
-                    {
-                        name: "commit",
-                        value: commitURL ? `[View Commit](${commitURL})` : "no commit URL",
-                        inline: false
-                    }
+                    }] : [])
                 ],
+                footer: { text: "moddybot deploy" },
                 timestamp: new Date().toISOString()
             };
 
@@ -143,14 +145,31 @@ async function executeDeploy(commitMessage?: string, pusher?: string, commitURL?
             LogAPI.err("deployment failed");
             LogAPI.err(stderr);
 
-            await sendDiscordMessage("deployment failed, check logs");
+            await sendDiscordMessage("", {
+                title: "\u274C Deploy Failed",
+                description: "The bot restart exited with a non-zero code. Check server logs.",
+                color: 0xef4444,
+                fields: stderr ? [{
+                    name: "stderr",
+                    value: `\`\`\`\n${stderr.slice(0, 1000)}\n\`\`\``,
+                    inline: false
+                }] : [],
+                footer: { text: "moddybot deploy" },
+                timestamp: new Date().toISOString()
+            });
             return false;
         }
     } catch (error) {
         LogAPI.err("deployment error");
         LogAPI.err(String(error));
 
-        await sendDiscordMessage("deployment error, check logs");
+        await sendDiscordMessage("", {
+            title: "\u{1F4A5} Deploy Error",
+            description: `\`\`\`\n${String(error).slice(0, 1000)}\n\`\`\``,
+            color: 0xdc2626,
+            footer: { text: "moddybot deploy" },
+            timestamp: new Date().toISOString()
+        });
         return false;
     }
 }
