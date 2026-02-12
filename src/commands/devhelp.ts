@@ -42,6 +42,13 @@ const ACTIONS = [{
         message: {
             content: "Do mods work in multiplayer?: Yes. \nCan I play mods with other people?: Yes."
         }
+    },
+    {
+        name: 'test',
+        value: "TEST",
+        message: {
+            content: "test?"
+        }
     }
 ]
 
