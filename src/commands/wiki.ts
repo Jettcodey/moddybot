@@ -29,7 +29,6 @@ const pages = {
     sdk_custom_scripts: '/repolib/sdk/custom-scripts.html',
     sdk_enemies: '/repolib/sdk/enemies.html',
     sdk_levels: '/repolib/sdk/levels.html',
-    sdk_items: '/repolib/sdk/enemies.html',
     sdk_valuables: '/repolib/sdk/valuables.html',
 }
 
