@@ -5,69 +5,91 @@ import {
     SlashCommandBuilder,
 } from "discord.js";
 import type { Command } from "@/types/index.ts";
-import {check} from "@/commands/defaults";
 
-const URL = 'https://repomods.com'
+const BASE_URL = 'https://repomods.com';
 
-const makeURL = (url: string) => `${URL}${url}`
-
-const pages = {
-    // global
-    overview: '/overview.html',
-    develop: '/develop.html',
-    // api
-    api_get_started: '/repolib/api/start.html',
-    api_bundle_loading: '/repolib/api/bundles.html',
-    api_mixer_groups: '/repolib/api/audio-mixer-groups.html',
-    api_commands: '/repolib/api/commands.html',
-    api_enemies: '/repolib/api/enemies.html',
-    api_items: '/repolib/api/items.html',
-    api_network_events: '/repolib/api/network-events.html',
-    api_network_prefabs: '/repolib/api/network-prefabs.html',
-    api_valuables: '/repolib/api/valuables.html',
-    // sdk
-    sdk_start: '/repolib/sdk/start.html',
-    sdk_custom_scripts: '/repolib/sdk/custom-scripts.html',
-    sdk_enemies: '/repolib/sdk/enemies.html',
-    sdk_levels: '/repolib/sdk/levels.html',
-    sdk_items: '/repolib/sdk/items.html',
-    sdk_valuables: '/repolib/sdk/valuables.html',
+interface Page {
+    id: string;
+    label: string;
+    path: string;
+    category: 'global' | 'api' | 'sdk';
 }
+
+const PAGES: Page[] = [
+    // Global
+    { id: 'overview', label: 'Overview', path: '/overview.html', category: 'global' },
+    { id: 'develop', label: 'Develop', path: '/develop.html', category: 'global' },
+
+    // API
+    { id: 'api_get_started', label: 'API Get Started', path: '/repolib/api/start.html', category: 'api' },
+    { id: 'api_bundle_loading', label: 'API Bundle Loading', path: '/repolib/api/bundles.html', category: 'api' },
+    { id: 'api_mixer_groups', label: 'API Mixer Groups', path: '/repolib/api/audio-mixer-groups.html', category: 'api' },
+    { id: 'api_commands', label: 'API Commands', path: '/repolib/api/commands.html', category: 'api' },
+    { id: 'api_enemies', label: 'API Enemies', path: '/repolib/api/enemies.html', category: 'api' },
+    { id: 'api_items', label: 'API Items', path: '/repolib/api/items.html', category: 'api' },
+    { id: 'api_network_events', label: 'API Network Events', path: '/repolib/api/network-events.html', category: 'api' },
+    { id: 'api_network_prefabs', label: 'API Network Prefabs', path: '/repolib/api/network-prefabs.html', category: 'api' },
+    { id: 'api_valuables', label: 'API Valuables', path: '/repolib/api/valuables.html', category: 'api' },
+
+    // SDK
+    { id: 'sdk_start', label: 'SDK Get Started', path: '/repolib/sdk/start.html', category: 'sdk' },
+    { id: 'sdk_custom_scripts', label: 'SDK Custom Scripts', path: '/repolib/sdk/custom-scripts.html', category: 'sdk' },
+    { id: 'sdk_enemies', label: 'SDK Enemies', path: '/repolib/sdk/enemies.html', category: 'sdk' },
+    { id: 'sdk_levels', label: 'SDK Levels', path: '/repolib/sdk/levels.html', category: 'sdk' },
+    { id: 'sdk_items', label: 'SDK Items', path: '/repolib/sdk/items.html', category: 'sdk' },
+    { id: 'sdk_valuables', label: 'SDK Valuables', path: '/repolib/sdk/valuables.html', category: 'sdk' },
+];
+
+const findPageById = (id: string): Page | undefined => {
+    return PAGES.find(page => page.id === id);
+};
+
+const buildUrl = (path: string): string => {
+    return `${BASE_URL}${path}`;
+};
 
 export default {
     data: new SlashCommandBuilder()
         .setName('wiki')
         .setDescription('Forwards to a wiki of REPO modding.')
         .addStringOption(option => option
-            .setName('type')
-            .setDescription('The type of wiki')
+            .setName('page')
+            .setDescription('The wiki page to view')
             .setRequired(true)
             .setAutocomplete(true)
         ),
 
-    permissionCheck: () => ({result: true}),
+    permissionCheck: () => ({ result: true }),
 
     async autocomplete(client: Client, interaction: AutocompleteInteraction) {
-        await interaction.respond(
-            Object.entries(pages).map(([name, value]) => {
-                const formatted = name
-                    .split('_')
-                    .map(word => {
-                        if (word.toLowerCase() === 'api') return 'API';
-                        if (word.toLowerCase() === 'sdk') return 'SDK';
-                        return word.charAt(0).toUpperCase() + word.slice(1);
-                    })
-                    .join(' ');
+        const focusedValue = interaction.options.getFocused(true).value.toLowerCase();
 
-                return { name: formatted, value: name };
-            })
-        );
+        const filtered = PAGES
+            .filter(page => page.label.toLowerCase().includes(focusedValue))
+            .slice(0, 25)
+            .map(page => ({
+                name: page.label,
+                value: page.id,
+            }));
+
+        await interaction.respond(filtered);
     },
 
     async execute(client: Client, interaction: ChatInputCommandInteraction) {
-        const link = interaction.options.getString("type");
-        if (!link) return;
+        const pageId = interaction.options.getString('page', true);
+        const page = findPageById(pageId);
 
-        await interaction.reply(makeURL(link));
-    }
+        if (!page) {
+            await interaction.reply({
+                content: '❌ Page not found.',
+                ephemeral: true,
+            });
+            return;
+        }
+
+        const url = buildUrl(page.path);
+        await interaction.reply({
+            content: url,
+        });
+    },
 }
