@@ -109,12 +109,10 @@ export async function deployCommands(manager: Commands): Promise<void> {
             { body: commandsData },
         );
 
-        /*if (process.env.GUILD_ID) {
-            await rest.put(
-                Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
-                { body: commandsData },
-            );
-        }*/
+        await rest.put(
+            Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
+            { body: commandsData },
+        );
 
         LogAPI.log('Refreshed guild commands.');
     } catch (error) {
