@@ -20,7 +20,7 @@ const pages = {
     api_bundle_loading: '/repolib/api/bundles.html',
     api_mixer_groups: '/repolib/api/audio-mixer-groups.html',
     api_commands: '/repolib/api/commands.html',
-    api_items: '/repolib/api/enemies.html',
+    api_enemies: '/repolib/api/enemies.html',
     api_network_events: '/repolib/api/network-events.html',
     api_network_prefabs: '/repolib/api/network-prefabs.html',
     api_valuables: '/repolib/api/valuables.html',
