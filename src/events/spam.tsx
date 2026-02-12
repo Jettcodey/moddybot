@@ -103,7 +103,7 @@ export default {
             const lowerText = text.data.text.toLowerCase();
 
             return {
-                found: ['crypto', 'elonmusk', 'bitcoin', 'raydium', 'ethereum','nft'].some(keyword =>
+                found: ['crypto', 'elonmusk', 'bitcoin', 'raydium', 'ethereum','nft',"MrBeast"].some(keyword =>
                     lowerText.includes(keyword)
                 ),
                 url: x.url
