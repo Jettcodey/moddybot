@@ -21,6 +21,7 @@ const pages = {
     api_mixer_groups: '/repolib/api/audio-mixer-groups.html',
     api_commands: '/repolib/api/commands.html',
     api_enemies: '/repolib/api/enemies.html',
+    api_items: '/repolib/api/items.html',
     api_network_events: '/repolib/api/network-events.html',
     api_network_prefabs: '/repolib/api/network-prefabs.html',
     api_valuables: '/repolib/api/valuables.html',
@@ -29,6 +30,7 @@ const pages = {
     sdk_custom_scripts: '/repolib/sdk/custom-scripts.html',
     sdk_enemies: '/repolib/sdk/enemies.html',
     sdk_levels: '/repolib/sdk/levels.html',
+    sdk_items: '/repolib/sdk/items.html',
     sdk_valuables: '/repolib/sdk/valuables.html',
 }
 
