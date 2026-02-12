@@ -51,7 +51,7 @@ const buildUrl = (path: string): string => {
 export default {
     data: new SlashCommandBuilder()
         .setName('guide')
-        .setDescription('Replies to a wiki of REPO modding.')
+        .setDescription('Forwards to a wiki of REPO modding.')
         .addStringOption(option => option
             .setName('page')
             .setDescription('The wiki page to view')
