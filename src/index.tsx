@@ -58,7 +58,7 @@ eventsManager.getEvents().forEach(event => {
 
 client.on('clientReady', async () => {
     LogAPI.log('Ready!');
-    const server = client.guilds.cache.get('1344557689979670578')
+    const server = client.guilds.cache.get(process.env.GUILD_ID)
     await commands.loadCommands();
 
     const commandsData = commands.getAllCommands().map(cmd => ({
